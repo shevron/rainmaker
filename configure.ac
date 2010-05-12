@@ -3,7 +3,7 @@
 
 AC_PREREQ(2.61)
 AC_INIT([blast], [0.1], [shahar@arr.gr])
-AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_SRCDIR([src/blast.c])
 AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
