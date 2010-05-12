@@ -1,0 +1,4 @@
+# blast 
+
+SUBDIRS = src
+
