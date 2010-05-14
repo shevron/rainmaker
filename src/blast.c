@@ -20,6 +20,8 @@ typedef struct _blastGlobals {
 	int          tcount;
 	SoupURI     *url;
 	const gchar *method;
+	gchar       *body;
+	gchar       *ctype;
 	GMutex      *tcmutex;
 } blastGlobals;
 
@@ -33,14 +35,19 @@ typedef enum {
 
 char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 
+const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
+const gchar *ctype_octetstream     = "application/octet-stream";
+
 static blastGlobals *globals;
 
 static gint blast_globals_init(gchar *url, blastMethod method)
 {
 	globals = g_malloc(sizeof(blastGlobals));
-	globals->method = methods[method];
+	globals->method  = methods[method];
 	globals->tcmutex = g_mutex_new();
-	
+	globals->body    = NULL;
+	globals->ctype   = NULL;
+
 	if ((globals->url = soup_uri_new(url)) == NULL) {
 		g_printerr("Error: unable to parse URL '%s'\n", url);
 		return FALSE;
@@ -67,6 +74,11 @@ static void blast_worker(gpointer data)
 
 	session = soup_session_sync_new();
 	msg = soup_message_new_from_uri(globals->method, globals->url);
+	if (globals->body != NULL) {
+		g_assert(globals->ctype != NULL);
+		soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, globals->body, 
+			strlen(globals->body));
+	}
 
 	/*
 	soup_message_headers_append(
@@ -127,6 +139,9 @@ int main(int argc, char *argv[])
 	GOptionContext  *context;
 	GTimer          *timer;
 	blastClient    **clients;
+	gchar           *postdata = NULL, 
+                    *postfile = NULL, 
+                    *ctype    = NULL;
 
 	int              status_10x  = 0;
 	int              status_20x  = 0;
@@ -139,8 +154,12 @@ int main(int argc, char *argv[])
 
 	/* Define and parse command line arguments */
 	GOptionEntry    options[] = {
-		{"clients", 'c', 0, G_OPTION_ARG_INT, &workers, "number of concurrent clients to run", NULL},
+		{"clients",  'c', 0, G_OPTION_ARG_INT, &workers, "number of concurrent clients to run", NULL},
 		{"requests", 'r', 0, G_OPTION_ARG_INT, &requests, "number of requests to send per client", NULL},
+		{"postdata", 'p', 0, G_OPTION_ARG_STRING, &postdata, "post data (will send a POST request)", NULL},
+		{"postfile", 0,   0, G_OPTION_ARG_FILENAME, &postfile, "read post data from file (will send a POST request)", NULL},
+		{"ctype",    't', 0, G_OPTION_ARG_STRING, &ctype, "content type to use in POST/PUT requests", NULL},
+ 
 		{ NULL }
 	};
 
@@ -168,6 +187,18 @@ int main(int argc, char *argv[])
 	
 	if (! blast_globals_init((gchar *) argv[1], METHOD_GET)) {
 		exit(1);
+	}
+
+	if (postdata != NULL) {
+		globals->method = methods[METHOD_POST];
+		globals->body   = postdata;
+		globals->ctype  = (gchar *) ctype_form_urlencoded;
+	}
+
+	// TODO: Handle postfile and putfile
+ 
+	if (globals->body != NULL && ctype != NULL) {
+		globals->ctype = ctype;
 	}
 
 	if (requests < 1) {
