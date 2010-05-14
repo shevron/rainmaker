@@ -1,3 +1,11 @@
+/**
+ * rainmaker HTTP load generator
+ * Copyright (c) 2010 Shahar Evron
+ *
+ * rainmaker is free / open source software, available under the terms of the
+ * New BSD License. See COPYING for license details.
+ */
+
 #include "config.h"
 
 #ifndef _HAVE_RAINMAKER_H
@@ -13,13 +21,13 @@ typedef struct _rmClient {
 
 typedef struct _rmGlobals {
     guint        requests;
-	guint        clients;
+    guint        clients;
     guint        tcount;
     SoupURI     *url;
     const gchar *method;
     gchar       *body;
     gsize        bodysize;
-	gboolean     freebody;
+    gboolean     freebody;
     gchar       *ctype;
     GMutex      *tcmutex;
 } rmGlobals;

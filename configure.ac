@@ -1,5 +1,12 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+dnl --- 
+dnl rainmaker HTTP load generator
+dnl Copyright (c) 2010 Shahar Evron
+dnl 
+dnl rainmaker is free / open source software, available under the terms of the
+dnl New BSD License. See COPYING for license details.
+dnl ---
+
+# Paocess this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
 AC_INIT([rainmaker], [0.1], [shahar@arr.gr])
@@ -14,8 +21,8 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-PKG_CHECK_MODULES(LIBGLIB, [glib-2.0 >= 2.8])
-PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4])
+PKG_CHECK_MODULES([LIBGLIB], [glib-2.0 >= 2.8])
+PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4])
 
 # Checks for header files.
 AC_HEADER_STDC
