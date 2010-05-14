@@ -22,6 +22,7 @@ void rm_client_run(rmClient *client)
     guint        status;
     int          i;
     GTimer      *timer = g_timer_new();
+    rmHeader     *header;
 
     g_assert(globals->method != NULL);
     g_assert(globals->url    != NULL);
@@ -32,6 +33,10 @@ void rm_client_run(rmClient *client)
         g_assert(globals->ctype != NULL);
         soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, 
             globals->body, globals->bodysize);
+    }
+
+    for (header = globals->headers; header != NULL; header = header->next) {
+        soup_message_headers_append(msg->request_headers, header->name, header->value);
     }
 
     /*
