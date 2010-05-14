@@ -151,7 +151,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
                     *postfile = NULL,
                     *putfile  = NULL,
                     *ctype    = NULL;
-    gchar          **headers;
+    gchar          **headers  = NULL;
 
     g_assert(globals != NULL);
 
