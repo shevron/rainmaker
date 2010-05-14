@@ -21,6 +21,7 @@ typedef struct _rmGlobals {
 	SoupURI     *url;
 	const gchar *method;
 	gchar       *body;
+	gsize        bodysize;
 	gchar       *ctype;
 	GMutex      *tcmutex;
 } rmGlobals;
@@ -43,10 +44,11 @@ static rmGlobals *globals;
 static gint rm_globals_init(gchar *url, rmMethod method)
 {
 	globals = g_malloc(sizeof(rmGlobals));
-	globals->method  = methods[method];
-	globals->tcmutex = g_mutex_new();
-	globals->body    = NULL;
-	globals->ctype   = NULL;
+	globals->method   = methods[method];
+	globals->tcmutex  = g_mutex_new();
+	globals->body     = NULL;
+	globals->bodysize = 0;
+	globals->ctype    = NULL;
 
 	if ((globals->url = soup_uri_new(url)) == NULL) {
 		g_printerr("Error: unable to parse URL '%s'\n", url);
@@ -76,8 +78,8 @@ static void rm_worker(gpointer data)
 	msg = soup_message_new_from_uri(globals->method, globals->url);
 	if (globals->body != NULL) {
 		g_assert(globals->ctype != NULL);
-		soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, globals->body, 
-			strlen(globals->body));
+		soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, 
+			globals->body, globals->bodysize);
 	}
 
 	/*
@@ -134,13 +136,14 @@ static void rm_client_destroy(rmClient *client)
 
 int main(int argc, char *argv[])
 {
-	int              i, requests, workers = 1;
+	int              i, requests = 1, workers = 1;
 	GError          *error = NULL;
 	GOptionContext  *context;
 	GTimer          *timer;
-	rmClient    **clients;
+	rmClient       **clients;
 	gchar           *postdata = NULL, 
-                    *postfile = NULL, 
+                    *postfile = NULL,
+                    *putfile  = NULL,
                     *ctype    = NULL;
 
 	int              status_10x  = 0;
@@ -154,11 +157,18 @@ int main(int argc, char *argv[])
 
 	/* Define and parse command line arguments */
 	GOptionEntry    options[] = {
-		{"clients",  'c', 0, G_OPTION_ARG_INT, &workers, "number of concurrent clients to run", NULL},
-		{"requests", 'r', 0, G_OPTION_ARG_INT, &requests, "number of requests to send per client", NULL},
-		{"postdata", 'p', 0, G_OPTION_ARG_STRING, &postdata, "post data (will send a POST request)", NULL},
-		{"postfile", 0,   0, G_OPTION_ARG_FILENAME, &postfile, "read post data from file (will send a POST request)", NULL},
-		{"ctype",    't', 0, G_OPTION_ARG_STRING, &ctype, "content type to use in POST/PUT requests", NULL},
+		{"clients",  'c', 0, G_OPTION_ARG_INT, &workers, 
+			"number of concurrent clients to run", NULL},
+		{"requests", 'r', 0, G_OPTION_ARG_INT, &requests, 
+			"number of requests to send per client", NULL},
+		{"postdata", 'p', 0, G_OPTION_ARG_STRING, &postdata, 
+			"post data (will send a POST request)", NULL},
+		{"postfile", 0,   0, G_OPTION_ARG_FILENAME, &postfile, 
+			"read body from file and send as a POST request", NULL},
+		{"putfile",  0,   0, G_OPTION_ARG_FILENAME, &putfile,
+			"read body from file and send as a PUT request", NULL},
+		{"ctype",    't', 0, G_OPTION_ARG_STRING, &ctype, 
+			"content type to use in POST/PUT requests", NULL},
  
 		{ NULL }
 	};
@@ -189,19 +199,52 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	if (postdata != NULL) {
-		globals->method = methods[METHOD_POST];
-		globals->body   = postdata;
-		globals->ctype  = (gchar *) ctype_form_urlencoded;
+	if ((postdata != NULL && (postfile != NULL || putfile != NULL)) ||
+		(postfile != NULL && putfile != NULL)) {
+		
+		g_printerr("error: you may only specify one of --postdata, --postfile and --putfile\n");
+		exit(1);
 	}
 
-	// TODO: Handle postfile and putfile
- 
+	if (postdata != NULL) {
+		g_assert(postfile == NULL);
+		g_assert(putfile  == NULL);
+
+		globals->method   = methods[METHOD_POST];
+		globals->body     = postdata;
+		globals->bodysize = (gsize) strlen(postdata);
+		globals->ctype    = (gchar *) ctype_form_urlencoded;
+	}
+
+	if (postfile != NULL) {
+		g_assert(postdata == NULL);
+		g_assert(putfile  == NULL);
+
+		globals->method   = methods[METHOD_POST];
+		globals->ctype    = (gchar *) ctype_form_urlencoded;
+		if (! g_file_get_contents(postfile, &globals->body, &globals->bodysize, &error)) {
+			g_printerr("Error loading body: %s\n", error->message);
+			exit(2);
+		}
+	}
+
+	if (putfile != NULL) {
+		g_assert(postdata == NULL);
+		g_assert(postfile == NULL);
+
+		globals->method   = methods[METHOD_PUT];
+		globals->ctype    = (gchar *) ctype_octetstream;
+		if (! g_file_get_contents(putfile, &globals->body, &globals->bodysize, &error)) {
+			g_printerr("error loading body: %s\n", error->message);
+			exit(2);
+		}
+	}
+	
 	if (globals->body != NULL && ctype != NULL) {
 		globals->ctype = ctype;
 	}
 
-	if (requests < 1) {
+	if (requests <= 1) {
 		globals->requests = 1; 
 	} else {
 		globals->requests = requests;
@@ -250,6 +293,10 @@ int main(int argc, char *argv[])
 	printf("  4xx Client Error:  %d\n", status_40x);
 	printf("  5xx Server Error:  %d\n", status_50x);
 	printf("\n");
+
+	if (postfile != NULL || putfile != NULL) {
+		g_free(globals->body);
+	}
 	
 	g_timer_destroy(timer);
 	rm_globals_destroy();
