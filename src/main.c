@@ -5,26 +5,7 @@
 #include <libsoup/soup.h>
 
 #include "config.h"
-
-typedef struct _rmClient {
-	int     status_10x;
-	int     status_20x;
-	int     status_30x;
-	int     status_40x;
-	int     status_50x;
-	double  timer;
-} rmClient;
-
-typedef struct _rmGlobals {
-	int		     requests;
-	int          tcount;
-	SoupURI     *url;
-	const gchar *method;
-	gchar       *body;
-	gsize        bodysize;
-	gchar       *ctype;
-	GMutex      *tcmutex;
-} rmGlobals;
+#include "rainmaker.h"
 
 typedef enum {
 	METHOD_GET,
@@ -38,8 +19,6 @@ char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
 const gchar *ctype_octetstream     = "application/octet-stream";
-
-static rmGlobals *globals;
 
 static gint rm_globals_init(gchar *url, rmMethod method)
 {
@@ -63,55 +42,6 @@ static void rm_globals_destroy()
 	soup_uri_free(globals->url);
 	g_mutex_free(globals->tcmutex);
 	g_free(globals);
-}
-
-static void rm_worker(gpointer data)
-{
-	SoupSession *session;
-	SoupMessage *msg;
-	guint        status;
-	int          i;
-	rmClient *client = (rmClient *) data;
-	GTimer      *timer = g_timer_new();
-
-	session = soup_session_sync_new();
-	msg = soup_message_new_from_uri(globals->method, globals->url);
-	if (globals->body != NULL) {
-		g_assert(globals->ctype != NULL);
-		soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, 
-			globals->body, globals->bodysize);
-	}
-
-	/*
-	soup_message_headers_append(
-		msg->request_headers, 
-		"Accept", 
-		"text/xml, *;q=0.5"
-	);
-	*/
-
-	for (i = 0; i < globals->requests; i++) {
-		g_timer_start(timer);
-		status = soup_session_send_message(session, msg);
-		g_timer_stop(timer);
-
-		switch (status / 100) { 
-			case 1: client->status_10x++; break;
-			case 2: client->status_20x++; break;
-			case 3: client->status_30x++; break;
-			case 4: client->status_40x++; break;
-			case 5: client->status_50x++; break;
-		}
-
-		client->timer += g_timer_elapsed(timer, NULL);
-	}
-		
-	client->timer /= globals->requests;
-	g_timer_destroy(timer);
-
-	g_mutex_lock(globals->tcmutex);
-	globals->tcount--;
-	g_mutex_unlock(globals->tcmutex);
 }
 
 static rmClient *rm_client_init()
@@ -257,7 +187,7 @@ int main(int argc, char *argv[])
 	g_timer_start(timer);
 	for (i = 0; i < workers; i++) {
 		clients[i] = rm_client_init();
-		g_thread_create((GThreadFunc) rm_worker, clients[i], FALSE, NULL);
+		g_thread_create((GThreadFunc) rm_client_run, clients[i], FALSE, NULL);
 	}
 
 	while(globals->tcount > 0) g_usleep(10000); 
