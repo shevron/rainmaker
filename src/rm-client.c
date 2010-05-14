@@ -23,6 +23,9 @@ void rm_client_run(rmClient *client)
     int          i;
     GTimer      *timer = g_timer_new();
 
+    g_assert(globals->method != NULL);
+    g_assert(globals->url    != NULL);
+
     session = soup_session_sync_new();
     msg = soup_message_new_from_uri(globals->method, globals->url);
     if (globals->body != NULL) {
@@ -62,4 +65,8 @@ void rm_client_run(rmClient *client)
     globals->tcount--;
     g_mutex_unlock(globals->tcmutex);
 }
+
+/** 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ */
 

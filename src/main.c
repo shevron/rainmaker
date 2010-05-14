@@ -37,6 +37,7 @@ static void rm_globals_init()
     globals->freebody = FALSE;
     globals->ctype    = NULL;
     globals->url      = NULL;
+    globals->method   = NULL;
 }
 
 static void rm_globals_destroy()
@@ -78,6 +79,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
                     *postfile = NULL,
                     *putfile  = NULL,
                     *ctype    = NULL;
+    gchar          **headers;
 
     g_assert(globals != NULL);
 
@@ -87,7 +89,9 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
             "number of concurrent clients to run", NULL},
         {"requests", 'r', 0, G_OPTION_ARG_INT, &requests, 
             "number of requests to send per client", NULL},
-        {"postdata", 'p', 0, G_OPTION_ARG_STRING, &postdata, 
+        {"header",   'H', 0, G_OPTION_ARG_STRING_ARRAY, &headers,
+            "set a custom HTTP header, in 'Name: Value' format", NULL},
+        {"postdata", 'P', 0, G_OPTION_ARG_STRING, &postdata, 
             "post data (will send a POST request)", NULL},
         {"postfile", 0,   0, G_OPTION_ARG_FILENAME, &postfile, 
             "read body from file and send as a POST request", NULL},
@@ -133,9 +137,8 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         globals->body     = postdata;
         globals->bodysize = (gsize) strlen(postdata);
         globals->ctype    = (gchar *) ctype_form_urlencoded;
-    }
 
-    if (postfile != NULL) {
+    } else if (postfile != NULL) {
         g_assert(postdata == NULL);
         g_assert(putfile  == NULL);
 
@@ -146,9 +149,8 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
             return FALSE;
         }
         globals->freebody = TRUE;
-    }
 
-    if (putfile != NULL) {
+    } else if (putfile != NULL) {
         g_assert(postdata == NULL);
         g_assert(postfile == NULL);
 
@@ -160,6 +162,9 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         }
 
         globals->freebody = TRUE;
+
+    } else {
+        globals->method = methods[METHOD_GET];
     }
     
     if (globals->body != NULL && ctype != NULL) {
@@ -259,3 +264,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+/** 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ */
