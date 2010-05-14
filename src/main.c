@@ -6,16 +6,16 @@
 
 #include "config.h"
 
-typedef struct _blastClient {
+typedef struct _rmClient {
 	int     status_10x;
 	int     status_20x;
 	int     status_30x;
 	int     status_40x;
 	int     status_50x;
 	double  timer;
-} blastClient;
+} rmClient;
 
-typedef struct _blastGlobals {
+typedef struct _rmGlobals {
 	int		     requests;
 	int          tcount;
 	SoupURI     *url;
@@ -23,7 +23,7 @@ typedef struct _blastGlobals {
 	gchar       *body;
 	gchar       *ctype;
 	GMutex      *tcmutex;
-} blastGlobals;
+} rmGlobals;
 
 typedef enum {
 	METHOD_GET,
@@ -31,18 +31,18 @@ typedef enum {
 	METHOD_PUT,
 	METHOD_DELETE,
 	METHOD_HEAD
-} blastMethod;
+} rmMethod;
 
 char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
 const gchar *ctype_octetstream     = "application/octet-stream";
 
-static blastGlobals *globals;
+static rmGlobals *globals;
 
-static gint blast_globals_init(gchar *url, blastMethod method)
+static gint rm_globals_init(gchar *url, rmMethod method)
 {
-	globals = g_malloc(sizeof(blastGlobals));
+	globals = g_malloc(sizeof(rmGlobals));
 	globals->method  = methods[method];
 	globals->tcmutex = g_mutex_new();
 	globals->body    = NULL;
@@ -56,20 +56,20 @@ static gint blast_globals_init(gchar *url, blastMethod method)
 	return TRUE;
 }
 
-static void blast_globals_destroy()
+static void rm_globals_destroy()
 {
 	soup_uri_free(globals->url);
 	g_mutex_free(globals->tcmutex);
 	g_free(globals);
 }
 
-static void blast_worker(gpointer data)
+static void rm_worker(gpointer data)
 {
 	SoupSession *session;
 	SoupMessage *msg;
 	guint        status;
 	int          i;
-	blastClient *client = (blastClient *) data;
+	rmClient *client = (rmClient *) data;
 	GTimer      *timer = g_timer_new();
 
 	session = soup_session_sync_new();
@@ -112,11 +112,11 @@ static void blast_worker(gpointer data)
 	g_mutex_unlock(globals->tcmutex);
 }
 
-static blastClient *blast_client_init()
+static rmClient *rm_client_init()
 {
-	blastClient *client;
+	rmClient *client;
 
-	client = g_malloc(sizeof(blastClient));
+	client = g_malloc(sizeof(rmClient));
 	client->status_10x = 0;
 	client->status_20x = 0;
 	client->status_30x = 0;
@@ -127,7 +127,7 @@ static blastClient *blast_client_init()
 	return client;
 }
 
-static void blast_client_destroy(blastClient *client)
+static void rm_client_destroy(rmClient *client)
 {
 	g_free(client);
 }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 	GError          *error = NULL;
 	GOptionContext  *context;
 	GTimer          *timer;
-	blastClient    **clients;
+	rmClient    **clients;
 	gchar           *postdata = NULL, 
                     *postfile = NULL, 
                     *ctype    = NULL;
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
 	g_type_init();
 	g_thread_init(NULL);
 	
-	if (! blast_globals_init((gchar *) argv[1], METHOD_GET)) {
+	if (! rm_globals_init((gchar *) argv[1], METHOD_GET)) {
 		exit(1);
 	}
 
@@ -208,13 +208,13 @@ int main(int argc, char *argv[])
 	}
 
 	globals->tcount = workers; 
-	clients = g_malloc(sizeof(blastClient*) * workers); 
+	clients = g_malloc(sizeof(rmClient*) * workers); 
 	timer = g_timer_new();
 
 	g_timer_start(timer);
 	for (i = 0; i < workers; i++) {
-		clients[i] = blast_client_init();
-		g_thread_create((GThreadFunc) blast_worker, clients[i], FALSE, NULL);
+		clients[i] = rm_client_init();
+		g_thread_create((GThreadFunc) rm_worker, clients[i], FALSE, NULL);
 	}
 
 	while(globals->tcount > 0) g_usleep(10000); 
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 		status_50x += clients[i]->status_50x;
 		avg_reqtime += clients[i]->timer;
 
- 		blast_client_destroy(clients[i]);
+ 		rm_client_destroy(clients[i]);
 	}
 	g_free(clients);
 
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 	printf("\n");
 	
 	g_timer_destroy(timer);
-	blast_globals_destroy();
+	rm_globals_destroy();
 
 	return 0;
 }

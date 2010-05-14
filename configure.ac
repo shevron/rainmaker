@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT([blast], [0.1], [shahar@arr.gr])
-AC_CONFIG_SRCDIR([src/blast.c])
+AC_INIT([rainmaker], [0.1], [shahar@arr.gr])
+AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
@@ -14,6 +14,7 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
+PKG_CHECK_MODULES(LIBGLIB, [glib-2.0 >= 2.8])
 PKG_CHECK_MODULES(LIBSOUP, [libsoup-2.4])
 
 # Checks for header files.

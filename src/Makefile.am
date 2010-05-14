@@ -1,11 +1,11 @@
-# blast Makefile.am
+# rainmaker Makefile.am
 
-bin_PROGRAMS = blast
+bin_PROGRAMS = rainmaker
 
-blast_SOURCES = blast.c   \
-		blast.h
+rainmaker_SOURCES = main.c      \
+                    rainmaker.h
 
-blast_LDADD = $(LIBSOUP_LIBS)
+rainmaker_LDADD = $(LIBSOUP_LIBS)
 
 AM_CFLAGS = $(LIBSOUP_CFLAGS)
 

@@ -9436,21 +9436,27 @@ m4trace:configure.ac:14: -1- _LT_AC_SHELL_INIT([tagnames=${tagnames+${tagnames},
 m4trace:configure.ac:14: -1- AC_LIBTOOL_F77
 m4trace:configure.ac:14: -1- _LT_AC_LANG_F77
 m4trace:configure.ac:14: -1- _LT_AC_SHELL_INIT([tagnames=${tagnames+${tagnames},}F77])
-m4trace:configure.ac:17: -1- PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4])
+m4trace:configure.ac:17: -1- PKG_CHECK_MODULES([LIBGLIB], [glib-2.0 >= 2.8])
 m4trace:configure.ac:17: -1- PKG_PROG_PKG_CONFIG
 m4trace:configure.ac:17: -1- m4_pattern_forbid([^_?PKG_[A-Z_]+$])
 m4trace:configure.ac:17: -1- m4_pattern_allow([^PKG_CONFIG(_PATH)?$])
 m4trace:configure.ac:17: -1- m4_pattern_allow([^PKG_CONFIG$])
 m4trace:configure.ac:17: -1- m4_pattern_allow([^PKG_CONFIG$])
-m4trace:configure.ac:17: -1- m4_pattern_allow([^LIBSOUP_CFLAGS$])
-m4trace:configure.ac:17: -1- m4_pattern_allow([^LIBSOUP_LIBS$])
-m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([libsoup-2.4], [pkg_cv_[]LIBSOUP_CFLAGS=`$PKG_CONFIG --[]cflags "libsoup-2.4" 2>/dev/null`], [pkg_failed=yes])
-m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([libsoup-2.4], [pkg_cv_[]LIBSOUP_LIBS=`$PKG_CONFIG --[]libs "libsoup-2.4" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:17: -1- m4_pattern_allow([^LIBGLIB_CFLAGS$])
+m4trace:configure.ac:17: -1- m4_pattern_allow([^LIBGLIB_LIBS$])
+m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([glib-2.0 >= 2.8], [pkg_cv_[]LIBGLIB_CFLAGS=`$PKG_CONFIG --[]cflags "glib-2.0 >= 2.8" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:17: -1- PKG_CHECK_EXISTS([glib-2.0 >= 2.8], [pkg_cv_[]LIBGLIB_LIBS=`$PKG_CONFIG --[]libs "glib-2.0 >= 2.8" 2>/dev/null`], [pkg_failed=yes])
 m4trace:configure.ac:17: -1- _PKG_SHORT_ERRORS_SUPPORTED
-m4trace:configure.ac:20: -1- m4_pattern_allow([^STDC_HEADERS$])
-m4trace:configure.ac:27: -1- m4_pattern_allow([^LIBSOUP_CFLAGS$])
-m4trace:configure.ac:28: -1- m4_pattern_allow([^LIBSOUP_LIBS$])
-m4trace:configure.ac:33: -1- m4_pattern_allow([^LIB@&t@OBJS$])
-m4trace:configure.ac:33: -1- m4_pattern_allow([^LTLIBOBJS$])
-m4trace:configure.ac:33: -1- _AC_AM_CONFIG_HEADER_HOOK([$ac_file])
-m4trace:configure.ac:33: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS
+m4trace:configure.ac:18: -1- PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4])
+m4trace:configure.ac:18: -1- m4_pattern_allow([^LIBSOUP_CFLAGS$])
+m4trace:configure.ac:18: -1- m4_pattern_allow([^LIBSOUP_LIBS$])
+m4trace:configure.ac:18: -1- PKG_CHECK_EXISTS([libsoup-2.4], [pkg_cv_[]LIBSOUP_CFLAGS=`$PKG_CONFIG --[]cflags "libsoup-2.4" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:18: -1- PKG_CHECK_EXISTS([libsoup-2.4], [pkg_cv_[]LIBSOUP_LIBS=`$PKG_CONFIG --[]libs "libsoup-2.4" 2>/dev/null`], [pkg_failed=yes])
+m4trace:configure.ac:18: -1- _PKG_SHORT_ERRORS_SUPPORTED
+m4trace:configure.ac:21: -1- m4_pattern_allow([^STDC_HEADERS$])
+m4trace:configure.ac:28: -1- m4_pattern_allow([^LIBSOUP_CFLAGS$])
+m4trace:configure.ac:29: -1- m4_pattern_allow([^LIBSOUP_LIBS$])
+m4trace:configure.ac:34: -1- m4_pattern_allow([^LIB@&t@OBJS$])
+m4trace:configure.ac:34: -1- m4_pattern_allow([^LTLIBOBJS$])
+m4trace:configure.ac:34: -1- _AC_AM_CONFIG_HEADER_HOOK([$ac_file])
+m4trace:configure.ac:34: -1- _AM_OUTPUT_DEPENDENCY_COMMANDS

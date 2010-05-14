@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-# blast Makefile.am
+# rainmaker Makefile.am
 
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
@@ -34,7 +34,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = blast$(EXEEXT)
+bin_PROGRAMS = rainmaker$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -47,10 +47,10 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_blast_OBJECTS = blast.$(OBJEXT)
-blast_OBJECTS = $(am_blast_OBJECTS)
+am_rainmaker_OBJECTS = main.$(OBJEXT)
+rainmaker_OBJECTS = $(am_rainmaker_OBJECTS)
 am__DEPENDENCIES_1 =
-blast_DEPENDENCIES = $(am__DEPENDENCIES_1)
+rainmaker_DEPENDENCIES = $(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -63,8 +63,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(blast_SOURCES)
-DIST_SOURCES = $(blast_SOURCES)
+SOURCES = $(rainmaker_SOURCES)
+DIST_SOURCES = $(rainmaker_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -103,6 +103,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBGLIB_CFLAGS = @LIBGLIB_CFLAGS@
+LIBGLIB_LIBS = @LIBGLIB_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
@@ -179,10 +181,10 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-blast_SOURCES = blast.c   \
-		blast.h
+rainmaker_SOURCES = main.c      \
+                    rainmaker.h
 
-blast_LDADD = $(LIBSOUP_LIBS)
+rainmaker_LDADD = $(LIBSOUP_LIBS)
 AM_CFLAGS = $(LIBSOUP_CFLAGS)
 AM_CPPFLAGS = $(LIBSOUP_CFLAGS)
 all: all-am
@@ -246,9 +248,9 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-blast$(EXEEXT): $(blast_OBJECTS) $(blast_DEPENDENCIES) 
-	@rm -f blast$(EXEEXT)
-	$(LINK) $(blast_OBJECTS) $(blast_LDADD) $(LIBS)
+rainmaker$(EXEEXT): $(rainmaker_OBJECTS) $(rainmaker_DEPENDENCIES) 
+	@rm -f rainmaker$(EXEEXT)
+	$(LINK) $(rainmaker_OBJECTS) $(rainmaker_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -256,7 +258,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/blast.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
