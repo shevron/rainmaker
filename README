@@ -32,6 +32,7 @@ Currently, rainmaker supports the following functions:
  - Send multiple requests concurrently from a number of clients running in
    separate threads
  - Send GET requests, and POST or PUT requests with custom content
+ - Set multiple custom headers to the request
 
 Run `rainmaker --help` for usage information. 
 
