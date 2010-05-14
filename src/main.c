@@ -28,11 +28,25 @@ char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
 const gchar *ctype_octetstream     = "application/octet-stream";
 
+static void rm_headers_free_all(rmHeader *header)
+{
+    rmHeader *next = NULL;
+
+    while (header != NULL) {
+        next = header->next;
+        g_free(header);
+        header = next;
+    }
+}
+
+
 static void rm_globals_init()
 {
     globals = g_malloc(sizeof(rmGlobals));
 
     globals->tcmutex  = g_mutex_new();
+    
+    globals->headers  = NULL;
     globals->body     = NULL;
     globals->freebody = FALSE;
     globals->ctype    = NULL;
@@ -44,6 +58,7 @@ static void rm_globals_destroy()
 {
     if (globals->url != NULL) soup_uri_free(globals->url);
     if (globals->freebody) g_free(globals->body);
+    rm_headers_free_all(globals->headers);
     g_mutex_free(globals->tcmutex);
 
     g_free(globals);
@@ -67,6 +82,63 @@ static rmClient *rm_client_init()
 static void rm_client_destroy(rmClient *client)
 {
     g_free(client);
+}
+
+static rmHeader* rm_header_new_from_string(gchar *string)
+{
+    gchar    *name, *value = NULL;
+    rmHeader *header;
+    int       i;
+
+    header = g_malloc(sizeof(rmHeader));
+    header->next = NULL;
+
+    name = string;
+
+    for (i = 0; string[i] != '\0'; i++) {
+        if (string[i] <= 0x20 || string[i] == 0x7f) {
+          return NULL;
+        }
+
+        switch (string[i]) {
+            case '(':
+            case ')':
+            case '<':
+            case '>':
+            case '@':
+            case ',':
+            case ';':
+            case '\\':
+            case '"':
+            case '/':
+            case '[':
+            case ']':
+            case '?':
+            case '=':
+            case '{':
+            case '}':
+                return NULL;
+                break;
+
+            case ':':
+                string[i] = '\0';
+                value = &string[i + 1];
+                i--;
+                break;
+        }
+    }
+
+    g_strstrip(name);
+    g_strstrip(value);
+
+    if (strlen(name) == 0 || strlen(value) == 0) {
+        return NULL;
+    }
+
+    header->name = name;
+    header->value = value;
+
+    return header;
 }
 
 static gboolean parse_load_cmd_args(int argc, char *argv[])
@@ -109,6 +181,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
     g_option_context_set_help_enabled(context, TRUE);
     g_option_context_add_main_entries(context, options, NULL);
 
+    /* Parse ! */
     if (! g_option_context_parse(context, &argc, &argv, &error)) {
         g_printerr("command line arguments parsing failed: %s\n", error->message);
         g_option_context_free(context);
@@ -129,6 +202,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         return FALSE;
     }
 
+    /* Set method and body */
     if (postdata != NULL) {
         g_assert(postfile == NULL);
         g_assert(putfile  == NULL);
@@ -167,8 +241,31 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         globals->method = methods[METHOD_GET];
     }
     
+    /* Set content type */
     if (globals->body != NULL && ctype != NULL) {
         globals->ctype = ctype;
+    }
+
+    /* Set headers */
+    if (headers != NULL) {
+        int i;
+        gchar *orig_header;
+        rmHeader *header, *prev = NULL;
+
+        for (i = 0; headers[i] != NULL; i++) {
+            orig_header = g_strdup(headers[i]);
+            header = rm_header_new_from_string(headers[i]);
+            if (header == NULL) {
+                g_printerr("Error: inavlid header '%s'\n", orig_header);
+                g_free(orig_header);
+                return FALSE;
+            }
+            g_free(orig_header);
+
+            if (globals->headers == NULL) globals->headers = header;
+            if (prev != NULL) prev->next = header;
+            prev = header;
+        }
     }
 
     if (requests <= 1) {

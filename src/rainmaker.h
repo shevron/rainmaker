@@ -19,17 +19,27 @@ typedef struct _rmClient {
     gdouble timer;
 } rmClient;
 
+typedef struct _rmHeader {
+    gchar            *name;
+    gchar            *value;
+    struct _rmHeader *next;
+} rmHeader;
+
 typedef struct _rmGlobals {
+    /* Execution Options */
     guint        requests;
     guint        clients;
     guint        tcount;
-    SoupURI     *url;
+    GMutex      *tcmutex;
+    
+    /* Request Data */
     const gchar *method;
+    SoupURI     *url;
+    rmHeader    *headers;
+    gchar       *ctype;
     gchar       *body;
     gsize        bodysize;
     gboolean     freebody;
-    gchar       *ctype;
-    GMutex      *tcmutex;
 } rmGlobals;
 
 rmGlobals *globals;
@@ -38,3 +48,8 @@ void rm_client_run(rmClient *client);
 
 #define _HAVE_RAINMAKER_H
 #endif
+
+/** 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ */
+
