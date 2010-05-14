@@ -3,21 +3,23 @@
 #ifndef _HAVE_RAINMAKER_H
 
 typedef struct _rmClient {
-    int     status_10x;
-    int     status_20x;
-    int     status_30x;
-    int     status_40x;
-    int     status_50x;
-    double  timer;
+    guint   status_10x;
+    guint   status_20x;
+    guint   status_30x;
+    guint   status_40x;
+    guint   status_50x;
+    gdouble timer;
 } rmClient;
 
 typedef struct _rmGlobals {
-    int          requests;
-    int          tcount;
+    guint        requests;
+	guint        clients;
+    guint        tcount;
     SoupURI     *url;
     const gchar *method;
     gchar       *body;
     gsize        bodysize;
+	gboolean     freebody;
     gchar       *ctype;
     GMutex      *tcmutex;
 } rmGlobals;
