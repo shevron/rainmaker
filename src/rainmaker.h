@@ -40,6 +40,9 @@ typedef struct _rmGlobals {
     gchar       *body;
     gsize        bodysize;
     gboolean     freebody;
+#ifdef HAVE_LIBSOUP_COOKIEJAR
+    gboolean     savecookies;
+#endif
 } rmGlobals;
 
 rmGlobals *globals;

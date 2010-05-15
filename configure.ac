@@ -22,7 +22,7 @@ AC_PROG_LIBTOOL
 
 # Checks for libraries.
 PKG_CHECK_MODULES([LIBGLIB], [glib-2.0 >= 2.8])
-PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4])
+PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4 >= 2.24])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -31,6 +31,11 @@ AC_CHECK_HEADERS([string.h])
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+AC_CHECK_LIB([soup-2.4], [soup_cookie_jar_new], [
+  AC_DEFINE(HAVE_LIBSOUP_COOKIEJAR, 1, [define if libsoup supports SoupCookieJar])
+], [ 
+  AC_WARN([libsoup is too old, cookie persistance support is disabled])
+], [$LIBSOUP_LIBS])
 
 AC_SUBST(LIBSOUP_CFLAGS)
 AC_SUBST(LIBSOUP_LIBS)

@@ -28,6 +28,12 @@ void rm_client_run(rmClient *client)
     g_assert(globals->url    != NULL);
 
     session = soup_session_sync_new();
+
+#ifdef HAVE_LIBSOUP_COOKIEJAR
+    SoupCookieJar *jar = soup_cookie_jar_new();
+    soup_session_add_feature(session, (SoupSessionFeature *) jar);
+#endif
+
     msg = soup_message_new_from_uri(globals->method, globals->url);
     if (globals->body != NULL) {
         g_assert(globals->ctype != NULL);
@@ -44,7 +50,7 @@ void rm_client_run(rmClient *client)
         status = soup_session_send_message(session, msg);
         g_timer_stop(timer);
 
-        switch (status / 100) { 
+        switch (status / 100) {
             case 1: client->status_10x++; break;
             case 2: client->status_20x++; break;
             case 3: client->status_30x++; break;

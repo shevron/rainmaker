@@ -152,6 +152,9 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
                     *putfile  = NULL,
                     *ctype    = NULL;
     gchar          **headers  = NULL;
+#ifdef HAVE_LIBSOUP_COOKIEJAR
+    gboolean         savecookies = FALSE;
+#endif
 
     g_assert(globals != NULL);
 
@@ -171,7 +174,10 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
             "read body from file and send as a PUT request", NULL},
         {"ctype",    't', 0, G_OPTION_ARG_STRING, &ctype, 
             "content type to use in POST/PUT requests", NULL},
- 
+#ifdef HAVE_LIBSOUP_COOKIEJAR
+        {"savecookies", 'C', 0, G_OPTION_ARG_NONE, &savecookies, 
+            "enable per-client cookie persistence", NULL},
+#endif
         { NULL }
     };
 
@@ -268,6 +274,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         }
     }
 
+    /* Set number of requests / clients */
     if (requests <= 1) {
         globals->requests = 1; 
     } else {
@@ -280,10 +287,15 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         globals->clients = clients;
     }
 
+    /* Set URL */
     if ((globals->url = soup_uri_new(argv[1])) == NULL) {
         g_printerr("Error: unable to parse URL '%s'\n", argv[1]);
         return FALSE;
     }
+
+#ifdef HAVE_LIBSOUP_COOKIEJAR
+    globals->savecookies = savecookies;
+#endif
 
     return TRUE;
 }

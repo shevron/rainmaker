@@ -10627,12 +10627,12 @@ if test -n "$LIBSOUP_CFLAGS"; then
     pkg_cv_LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4" 2>/dev/null`
+  pkg_cv_LIBSOUP_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -10643,12 +10643,12 @@ if test -n "$LIBSOUP_LIBS"; then
     pkg_cv_LIBSOUP_LIBS="$LIBSOUP_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_LIBS=`$PKG_CONFIG --libs "libsoup-2.4" 2>/dev/null`
+  pkg_cv_LIBSOUP_LIBS=`$PKG_CONFIG --libs "libsoup-2.4 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -10666,14 +10666,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4" 2>&1`
+	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4 >= 2.24" 2>&1`
         else
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4" 2>&1`
+	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4 >= 2.24" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSOUP_PKG_ERRORS" >&5
 
-	as_fn_error "Package requirements (libsoup-2.4) were not met:
+	as_fn_error "Package requirements (libsoup-2.4 >= 2.24) were not met:
 
 $LIBSOUP_PKG_ERRORS
 
@@ -10834,6 +10834,55 @@ done
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for soup_cookie_jar_new in -lsoup-2.4" >&5
+$as_echo_n "checking for soup_cookie_jar_new in -lsoup-2.4... " >&6; }
+if test "${ac_cv_lib_soup_2_4_soup_cookie_jar_new+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lsoup-2.4 $LIBSOUP_LIBS $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char soup_cookie_jar_new ();
+int
+main ()
+{
+return soup_cookie_jar_new ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_soup_2_4_soup_cookie_jar_new=yes
+else
+  ac_cv_lib_soup_2_4_soup_cookie_jar_new=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_soup_2_4_soup_cookie_jar_new" >&5
+$as_echo "$ac_cv_lib_soup_2_4_soup_cookie_jar_new" >&6; }
+if test "x$ac_cv_lib_soup_2_4_soup_cookie_jar_new" = x""yes; then :
+
+
+$as_echo "#define HAVE_LIBSOUP_COOKIEJAR 1" >>confdefs.h
+
+
+else
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libsoup is too old, cookie persistance support is disabled" >&5
+$as_echo "$as_me: WARNING: libsoup is too old, cookie persistance support is disabled" >&2;}
+
+fi
+
 
 
 
