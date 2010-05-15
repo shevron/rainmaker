@@ -39,14 +39,6 @@ void rm_client_run(rmClient *client)
         soup_message_headers_append(msg->request_headers, header->name, header->value);
     }
 
-    /*
-    soup_message_headers_append(
-        msg->request_headers, 
-        "Accept", 
-        "text/xml, *;q=0.5"
-    );
-    */
-
     for (i = 0; i < globals->requests; i++) {
         g_timer_start(timer);
         status = soup_session_send_message(session, msg);
