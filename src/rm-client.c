@@ -35,6 +35,8 @@ void rm_client_run(rmClient *client)
 #endif
 
     msg = soup_message_new_from_uri(globals->method, globals->url);
+    soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
+
     if (globals->body != NULL) {
         g_assert(globals->ctype != NULL);
         soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, 
