@@ -75,6 +75,8 @@ static rmClient *rm_client_init()
     client->status_30x = 0;
     client->status_40x = 0;
     client->status_50x = 0;
+    client->total_reqs = 0;
+    client->done       = FALSE;
     client->timer      = 0;
 
     return client;
@@ -341,13 +343,30 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 }
 /* parse_load_cmd_args() }}} */
 
+void rm_control_run(rmClient **clients)
+{
+    int       i;
+    rmClient *client;
+    gboolean  done;
+
+    do {
+        g_usleep(10000);
+        done = TRUE;
+
+        for (i = 0; clients[i] != NULL; i++) {
+            done = (done && clients[i]->done);
+        }
+
+    } while (! done);
+}
+
 /* {{{ main() - what do you think?
  *
  */
 int main(int argc, char *argv[])
 {
-    GTimer    *timer;
     rmClient **clients;
+    GThread   *ctl_thread;
     int        status_10x  = 0;
     int        status_20x  = 0;
     int        status_30x  = 0;
@@ -368,17 +387,16 @@ int main(int argc, char *argv[])
     }
 
     globals->tcount = globals->clients; 
-    clients = g_malloc(sizeof(rmClient*) * globals->clients); 
-    timer = g_timer_new();
+    clients = g_malloc(sizeof(rmClient*) * (globals->clients + 1)); 
 
-    g_timer_start(timer);
     for (i = 0; i < globals->clients; i++) {
         clients[i] = rm_client_init();
         g_thread_create((GThreadFunc) rm_client_run, clients[i], FALSE, NULL);
     }
+    clients[globals->clients] = NULL;
 
-    while(globals->tcount > 0) g_usleep(10000); 
-    g_timer_stop(timer);
+    ctl_thread = g_thread_create((GThreadFunc) rm_control_run, clients, TRUE, NULL);
+    g_thread_join(ctl_thread);
 
     for (i = 0; i < globals->clients; i++) {
         status_10x += clients[i]->status_10x;
@@ -393,7 +411,7 @@ int main(int argc, char *argv[])
     g_free(clients);
 
     total_reqs = status_10x + status_20x + status_30x + status_40x + status_50x;
-    total_time = g_timer_elapsed(timer, NULL);
+    total_time = avg_reqtime;
     avg_reqtime /= globals->clients;
 
     /* Print out summary */
@@ -411,7 +429,6 @@ int main(int argc, char *argv[])
     printf("  5xx Server Error:  %d\n", status_50x);
     printf("\n");
 
-    g_timer_destroy(timer);
     rm_globals_destroy();
 
     return 0;

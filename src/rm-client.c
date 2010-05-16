@@ -56,6 +56,8 @@ void rm_client_run(rmClient *client)
         status = soup_session_send_message(session, msg);
         g_timer_stop(timer);
 
+        client->total_reqs++;
+
         switch (status / 100) {
             case 1: client->status_10x++; break;
             case 2: client->status_20x++; break;
@@ -70,9 +72,7 @@ void rm_client_run(rmClient *client)
     client->timer /= globals->requests;
     g_timer_destroy(timer);
 
-    g_mutex_lock(globals->tcmutex);
-    globals->tcount--;
-    g_mutex_unlock(globals->tcmutex);
+    client->done = TRUE;
 }
 /* rm_client_run }}} */
 
