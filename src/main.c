@@ -78,6 +78,7 @@ static rmClient *rm_client_init()
     client->total_reqs = 0;
     client->done       = FALSE;
     client->timer      = 0;
+    client->error      = NULL;
 
     return client;
 }
@@ -88,6 +89,7 @@ static rmClient *rm_client_init()
  */
 static void rm_client_destroy(rmClient *client)
 {
+    if (client->error != NULL) g_error_free(client->error);
     g_free(client);
 }
 /* rm_client_destroy() }}} */
@@ -355,7 +357,7 @@ static void rm_control_run(rmClient **clients)
     int       i, total_reqs, done_reqs = 0; 
     gboolean  done;
     gdouble   total_time;
-    gdouble   current_load;
+    gdouble   current_load = 0;
 
     g_assert(clients != NULL);
 
@@ -373,14 +375,16 @@ static void rm_control_run(rmClient **clients)
             total_time += clients[i]->timer;
         }
         
-        current_load = done_reqs / (total_time / globals->clients);
+        if (total_time && globals->clients) {
+            current_load = done_reqs / (total_time / globals->clients);
+        } 
         printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
             done_reqs, total_reqs, current_load, "\r");
         fflush(stdout);
 
     } while (! done);
 
-    printf("\r");
+    printf("\n");
 }
 /* rm_control_run() }}} */
 
@@ -402,7 +406,6 @@ int main(int argc, char *argv[])
     double     avg_load_server = 0;
     int        i;
 
-
     g_type_init();
     g_thread_init(NULL);
 
@@ -423,7 +426,12 @@ int main(int argc, char *argv[])
     ctl_thread = g_thread_create((GThreadFunc) rm_control_run, clients, TRUE, NULL);
     g_thread_join(ctl_thread);
 
+    /* sum up results */
     for (i = 0; i < globals->clients; i++) {
+        if (clients[i]->error != NULL) {
+            g_printerr("Client error: %s\n", clients[i]->error->message);
+            break;
+        }
         status_10x += clients[i]->status_10x;
         status_20x += clients[i]->status_20x;
         status_30x += clients[i]->status_30x;
@@ -431,7 +439,10 @@ int main(int argc, char *argv[])
         status_50x += clients[i]->status_50x;
         total_reqs += clients[i]->total_reqs;
         total_time += clients[i]->timer;
+    }
 
+    /* free clients */
+    for (i = 0; i < globals->clients; i++) {
         rm_client_destroy(clients[i]);
     }
     g_free(clients);
@@ -440,18 +451,20 @@ int main(int argc, char *argv[])
     avg_load_server = 1 / ((total_time / globals->clients) / total_reqs);
 
     /* Print out summary */
-    printf("--------------------------------------------------------------\n");
-    printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / globals->clients));
-    printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
-    printf("  Average load per client: %.3f req/sec\n", avg_load_client);
-    printf("--------------------------------------------------------------\n");
-    if (total_reqs) printf("HTTP Status codes:\n");
-    if (status_10x) printf("  1xx Informational: %d\n", status_10x);
-    if (status_20x) printf("  2xx Success:       %d\n", status_20x);
-    if (status_30x) printf("  3xx Redirection:   %d\n", status_30x);
-    if (status_40x) printf("  4xx Client Error:  %d\n", status_40x);
-    if (status_50x) printf("  5xx Server Error:  %d\n", status_50x);
-    printf("\n");
+    if (total_reqs) {
+        printf("--------------------------------------------------------------\n");
+        printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / globals->clients));
+        printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
+        printf("  Average load per client: %.3f req/sec\n", avg_load_client);
+        printf("--------------------------------------------------------------\n");
+        if (total_reqs) printf("HTTP Status codes:\n");
+        if (status_10x) printf("  1xx Informational: %d\n", status_10x);
+        if (status_20x) printf("  2xx Success:       %d\n", status_20x);
+        if (status_30x) printf("  3xx Redirection:   %d\n", status_30x);
+        if (status_40x) printf("  4xx Client Error:  %d\n", status_40x);
+        if (status_50x) printf("  5xx Server Error:  %d\n", status_50x);
+        printf("\n");
+    }
 
     rm_globals_destroy();
 

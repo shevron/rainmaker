@@ -13,14 +13,15 @@
 #define RAINMAKER_USERAGENT "rainmaker/" PACKAGE_VERSION " "
 
 typedef struct _rmClient {
-    guint    status_10x;
-    guint    status_20x;
-    guint    status_30x;
-    guint    status_40x;
-    guint    status_50x;
-    guint    total_reqs;
-    gboolean done;
-    gdouble timer;
+    guint     status_10x;
+    guint     status_20x;
+    guint     status_30x;
+    guint     status_40x;
+    guint     status_50x;
+    guint     total_reqs;
+    gboolean  done;
+    gdouble   timer;
+    GError   *error;
 } rmClient;
 
 typedef struct _rmHeader {
