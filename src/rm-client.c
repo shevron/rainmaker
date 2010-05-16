@@ -15,6 +15,10 @@
 #include "config.h"
 #include "rainmaker.h"
 
+/* {{{ rm_client_run() - run a load-generating client 
+ *
+ * This is where the magic really happens :)
+ */
 void rm_client_run(rmClient *client)
 {
     SoupSession *session;
@@ -70,8 +74,9 @@ void rm_client_run(rmClient *client)
     globals->tcount--;
     g_mutex_unlock(globals->tcmutex);
 }
+/* rm_client_run }}} */
 
 /** 
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker 
  */
 

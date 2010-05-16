@@ -28,18 +28,11 @@ char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
 const gchar *ctype_octetstream     = "application/octet-stream";
 
-static void rm_headers_free_all(rmHeader *header)
-{
-    rmHeader *next = NULL;
+static void rm_headers_free_all(rmHeader *header);
 
-    while (header != NULL) {
-        next = header->next;
-        g_free(header);
-        header = next;
-    }
-}
-
-
+/* {{{ rm_globals_init() - Initialize global variables struct
+ *
+ */
 static void rm_globals_init()
 {
     globals = g_malloc(sizeof(rmGlobals));
@@ -53,7 +46,11 @@ static void rm_globals_init()
     globals->url      = NULL;
     globals->method   = NULL;
 }
+/* rm_globals_init() }}} */
 
+/* {{{ rm_globals_destroy() - Clean up global variables 
+ *
+ */
 static void rm_globals_destroy()
 {
     if (globals->url != NULL) soup_uri_free(globals->url);
@@ -63,7 +60,11 @@ static void rm_globals_destroy()
 
     g_free(globals);
 }
+/* rm_globals_destroy() }}} */
 
+/* {{{ rm_client_init() - Initialize an rmClient struct 
+ *
+ */
 static rmClient *rm_client_init()
 {
     rmClient *client;
@@ -78,12 +79,32 @@ static rmClient *rm_client_init()
 
     return client;
 }
+/* rm_client_init() }}} */
 
+/* {{{ rm_client_destroy() - free an rmClient struct 
+ *
+ */
 static void rm_client_destroy(rmClient *client)
 {
     g_free(client);
 }
+/* rm_client_destroy() }}} */
 
+/* {{{ rm_header_new_from_string() - create a new header struct from string
+ *
+ * Will take in a "Header: Value" form string, parse / split it and create
+ * a new rmHeader struct from it. 
+ *
+ * The input string is modified, and original
+ * string is split into two strings by inserting a '\0' character to separate
+ * header name and value. No additional memory is allocated to contain the 
+ * name and value - so you must not attempt to free the input string before
+ * releasing the rmHeader struct. 
+ *
+ * The returned rmHeader struct must be freed using rm_header_free_all().
+ *
+ * Will return NULL if the input string is not a valid header.
+ */
 static rmHeader* rm_header_new_from_string(gchar *string)
 {
     gchar    *name, *value = NULL;
@@ -140,7 +161,26 @@ static rmHeader* rm_header_new_from_string(gchar *string)
 
     return header;
 }
+/* rm_header_new_from_string() }}} */
 
+/* {{{ rm_headers_free_all() - free a linked-list of header structs 
+ *
+ */
+static void rm_headers_free_all(rmHeader *header)
+{
+    rmHeader *next = NULL;
+
+    while (header != NULL) {
+        next = header->next;
+        g_free(header);
+        header = next;
+    }
+}
+/* rm_headers_free_all() }}} */
+
+/* {{{ parse_load_cmd_args() - parse command line arguments and load config
+ *
+ */
 static gboolean parse_load_cmd_args(int argc, char *argv[])
 {
     GOptionContext  *context;
@@ -299,7 +339,11 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 
     return TRUE;
 }
+/* parse_load_cmd_args() }}} */
 
+/* {{{ main() - what do you think?
+ *
+ */
 int main(int argc, char *argv[])
 {
     GTimer    *timer;
@@ -372,7 +416,8 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+/* main() }}} */
 
 /** 
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */

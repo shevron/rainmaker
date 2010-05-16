@@ -53,6 +53,6 @@ void rm_client_run(rmClient *client);
 #endif
 
 /** 
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=syntax 
+ * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */
 
