@@ -340,7 +340,10 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 }
 /* parse_load_cmd_args() }}} */
 
-void rm_control_run(rmClient **clients)
+/* {{{ rm_control_run() - run the control thread 
+ *
+ */
+static void rm_control_run(rmClient **clients)
 {
     int       i, total_reqs, done_reqs = 0; 
     gboolean  done;
@@ -372,6 +375,7 @@ void rm_control_run(rmClient **clients)
 
     printf("\r");
 }
+/* rm_control_run() }}} */
 
 /* {{{ main() - what do you think?
  *
