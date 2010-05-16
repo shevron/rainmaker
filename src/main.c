@@ -445,12 +445,12 @@ int main(int argc, char *argv[])
     printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
     printf("  Average load per client: %.3f req/sec\n", avg_load_client);
     printf("--------------------------------------------------------------\n");
-    printf("HTTP Status codes:\n");
-    printf("  1xx Informational: %d\n", status_10x);
-    printf("  2xx Success:       %d\n", status_20x);
-    printf("  3xx Redirection:   %d\n", status_30x);
-    printf("  4xx Client Error:  %d\n", status_40x);
-    printf("  5xx Server Error:  %d\n", status_50x);
+    if (total_reqs) printf("HTTP Status codes:\n");
+    if (status_10x) printf("  1xx Informational: %d\n", status_10x);
+    if (status_20x) printf("  2xx Success:       %d\n", status_20x);
+    if (status_30x) printf("  3xx Redirection:   %d\n", status_30x);
+    if (status_40x) printf("  4xx Client Error:  %d\n", status_40x);
+    if (status_50x) printf("  5xx Server Error:  %d\n", status_50x);
     printf("\n");
 
     rm_globals_destroy();
