@@ -69,7 +69,6 @@ void rm_client_run(rmClient *client)
         client->timer += g_timer_elapsed(timer, NULL);
     }
         
-    client->timer /= globals->requests;
     g_timer_destroy(timer);
 
     client->done = TRUE;

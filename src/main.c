@@ -342,18 +342,34 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 
 void rm_control_run(rmClient **clients)
 {
-    int       i;
+    int       i, total_reqs, done_reqs = 0; 
     gboolean  done;
+    gdouble   total_time;
+    gdouble   current_load;
+
+    g_assert(clients != NULL);
+
+    total_reqs = globals->clients * globals->requests;
 
     do {
-        g_usleep(10000);
+        g_usleep(1000);
         done = TRUE;
+        done_reqs = 0;
+        total_time = 0;
 
         for (i = 0; clients[i] != NULL; i++) {
             done = (done && clients[i]->done);
+            done_reqs += clients[i]->total_reqs;
+            total_time += clients[i]->timer;
         }
+        
+        current_load = done_reqs / (total_time / globals->clients);
+        printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
+            done_reqs, total_reqs, current_load, "\r");
 
     } while (! done);
+
+    printf("\r");
 }
 
 /* {{{ main() - what do you think?
@@ -370,8 +386,10 @@ int main(int argc, char *argv[])
     int        status_50x  = 0;
     int        total_reqs  = 0;
     double     total_time  = 0;
-    double     avg_reqtime = 0;
+    double     avg_load_client = 0;
+    double     avg_load_server = 0;
     int        i;
+
 
     g_type_init();
     g_thread_init(NULL);
@@ -399,22 +417,21 @@ int main(int argc, char *argv[])
         status_30x += clients[i]->status_30x;
         status_40x += clients[i]->status_40x;
         status_50x += clients[i]->status_50x;
-        avg_reqtime += clients[i]->timer;
+        total_reqs += clients[i]->total_reqs;
+        total_time += clients[i]->timer;
 
-         rm_client_destroy(clients[i]);
+        rm_client_destroy(clients[i]);
     }
     g_free(clients);
 
-    total_reqs = status_10x + status_20x + status_30x + status_40x + status_50x;
-    total_time = avg_reqtime;
-    avg_reqtime /= globals->clients;
+    avg_load_client = 1 / (total_time / total_reqs);
+    avg_load_server = 1 / ((total_time / globals->clients) / total_reqs);
 
     /* Print out summary */
     printf("--------------------------------------------------------------\n");
-    printf("Completed %d requests in %.3f seconds\n", total_reqs, total_time);
-    printf("  %10.3f avg. requests per second accross all clients\n", 
-        (total_reqs / total_time));
-    printf("  %10.3f avg. requests per second per client\n", (1 / avg_reqtime));
+    printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / globals->clients));
+    printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
+    printf("  Average load per client: %.3f req/sec\n", avg_load_client);
     printf("--------------------------------------------------------------\n");
     printf("HTTP Status codes:\n");
     printf("  1xx Informational: %d\n", status_10x);
