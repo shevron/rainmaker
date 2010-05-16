@@ -37,12 +37,14 @@ static void rm_globals_init()
 {
     globals = g_malloc(sizeof(rmGlobals));
 
-    globals->headers  = NULL;
-    globals->body     = NULL;
-    globals->freebody = FALSE;
-    globals->ctype    = NULL;
-    globals->url      = NULL;
-    globals->method   = NULL;
+    globals->useragent = NULL;
+    globals->headers   = NULL;
+    globals->body      = NULL;
+    globals->bodysize  = 0;
+    globals->freebody  = FALSE;
+    globals->ctype     = NULL;
+    globals->url       = NULL;
+    globals->method    = NULL;
 }
 /* rm_globals_init() }}} */
 
@@ -52,6 +54,7 @@ static void rm_globals_init()
 static void rm_globals_destroy()
 {
     if (globals->url != NULL) soup_uri_free(globals->url);
+    if (globals->useragent != NULL) g_free(globals->useragent);
     if (globals->freebody) g_free(globals->body);
     rm_headers_free_all(globals->headers);
 
@@ -291,6 +294,10 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         globals->ctype = ctype;
     }
 
+    /* Set user agent */
+    /* TODO: make this a command line argument / config option */
+    globals->useragent = g_strdup(RAINMAKER_USERAGENT);
+    
     /* Set headers */
     if (headers != NULL) {
         int i;

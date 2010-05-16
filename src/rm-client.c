@@ -26,12 +26,25 @@ void rm_client_run(rmClient *client)
     guint        status;
     int          i;
     GTimer      *timer = g_timer_new();
-    rmHeader     *header;
+    rmHeader    *header;
 
     g_assert(globals->method != NULL);
     g_assert(globals->url    != NULL);
 
     session = soup_session_sync_new();
+
+    /* Set user agent string */
+    if (globals->useragent != NULL) {
+        GValue *useragent = g_malloc0(sizeof(GValue));
+
+        g_value_init(useragent, G_TYPE_STRING);
+        g_value_set_string(useragent, globals->useragent);
+        g_object_set_property((GObject *) session, SOUP_SESSION_USER_AGENT, 
+            useragent);
+
+        g_value_unset(useragent);
+        g_free(useragent);
+    }
 
 #ifdef HAVE_LIBSOUP_COOKIEJAR
     SoupCookieJar *jar = soup_cookie_jar_new();

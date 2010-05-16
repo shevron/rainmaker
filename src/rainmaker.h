@@ -10,6 +10,8 @@
 
 #ifndef _HAVE_RAINMAKER_H
 
+#define RAINMAKER_USERAGENT "rainmaker/" PACKAGE_VERSION " "
+
 typedef struct _rmClient {
     guint    status_10x;
     guint    status_20x;
@@ -36,6 +38,7 @@ typedef struct _rmGlobals {
     const gchar *method;
     SoupURI     *url;
     rmHeader    *headers;
+    gchar       *useragent;
     gchar       *ctype;
     gchar       *body;
     gsize        bodysize;
