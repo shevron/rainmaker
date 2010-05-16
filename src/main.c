@@ -352,7 +352,7 @@ void rm_control_run(rmClient **clients)
     total_reqs = globals->clients * globals->requests;
 
     do {
-        g_usleep(1000);
+        g_usleep(50000);
         done = TRUE;
         done_reqs = 0;
         total_time = 0;
@@ -366,6 +366,7 @@ void rm_control_run(rmClient **clients)
         current_load = done_reqs / (total_time / globals->clients);
         printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
             done_reqs, total_reqs, current_load, "\r");
+        fflush(stdout);
 
     } while (! done);
 
