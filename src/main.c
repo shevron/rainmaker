@@ -37,8 +37,6 @@ static void rm_globals_init()
 {
     globals = g_malloc(sizeof(rmGlobals));
 
-    globals->tcmutex  = g_mutex_new();
-    
     globals->headers  = NULL;
     globals->body     = NULL;
     globals->freebody = FALSE;
@@ -56,7 +54,6 @@ static void rm_globals_destroy()
     if (globals->url != NULL) soup_uri_free(globals->url);
     if (globals->freebody) g_free(globals->body);
     rm_headers_free_all(globals->headers);
-    g_mutex_free(globals->tcmutex);
 
     g_free(globals);
 }
@@ -346,7 +343,6 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 void rm_control_run(rmClient **clients)
 {
     int       i;
-    rmClient *client;
     gboolean  done;
 
     do {
@@ -386,7 +382,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    globals->tcount = globals->clients; 
     clients = g_malloc(sizeof(rmClient*) * (globals->clients + 1)); 
 
     for (i = 0; i < globals->clients; i++) {

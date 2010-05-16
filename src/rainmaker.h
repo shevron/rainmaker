@@ -31,8 +31,6 @@ typedef struct _rmGlobals {
     /* Execution Options */
     guint        requests;
     guint        clients;
-    guint        tcount;
-    GMutex      *tcmutex;
     
     /* Request Data */
     const gchar *method;
