@@ -27,7 +27,6 @@ void rm_client_run(rmClient *client)
     int          i;
     GTimer      *timer = g_timer_new();
     rmHeader    *header;
-    gboolean     abort = FALSE;
 
     g_assert(globals->method != NULL);
     g_assert(globals->url    != NULL);
@@ -65,7 +64,7 @@ void rm_client_run(rmClient *client)
         soup_message_headers_append(msg->request_headers, header->name, header->value);
     }
 
-    for (i = 0; i < globals->requests && (! abort); i++) {
+    for (i = 0; i < globals->requests; i++) {
         g_timer_start(timer);
         status = soup_session_send_message(session, msg);
         g_timer_stop(timer);
@@ -73,22 +72,13 @@ void rm_client_run(rmClient *client)
         if (SOUP_STATUS_IS_TRANSPORT_ERROR(status)) {
             client->error = g_error_new_literal(SOUP_HTTP_ERROR, status, msg->reason_phrase);
             break;
-        }
 
+        }
+        
+        g_assert(status >= 100 && status <= 599);
+        
+        client->statuses[(status / 100) - 1]++;
         client->total_reqs++;
-
-        switch (status / 100) {
-            case 1: client->status_10x++; break;
-            case 2: client->status_20x++; break;
-            case 3: client->status_30x++; break;
-            case 4: client->status_40x++; break;
-            case 5: client->status_50x++; break;
-            default:
-                g_assert(status >= 100 && status <= 599);
-                abort = TRUE;
-                break;
-        }
-
         client->timer += g_timer_elapsed(timer, NULL);
     }
         

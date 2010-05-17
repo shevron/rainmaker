@@ -23,6 +23,14 @@ typedef enum {
     METHOD_HEAD
 } rmMethod;
 
+enum {
+  STATUS_10x,
+  STATUS_20x,
+  STATUS_30x,
+  STATUS_40x,
+  STATUS_50x,
+};
+
 char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
@@ -70,11 +78,7 @@ static rmClient *rm_client_init()
     rmClient *client;
 
     client = g_malloc(sizeof(rmClient));
-    client->status_10x = 0;
-    client->status_20x = 0;
-    client->status_30x = 0;
-    client->status_40x = 0;
-    client->status_50x = 0;
+    memset(client->statuses, 0, sizeof(guint) * 5);
     client->total_reqs = 0;
     client->done       = FALSE;
     client->timer      = 0;
@@ -432,11 +436,11 @@ int main(int argc, char *argv[])
             g_printerr("Client error: %s\n", clients[i]->error->message);
             break;
         }
-        status_10x += clients[i]->status_10x;
-        status_20x += clients[i]->status_20x;
-        status_30x += clients[i]->status_30x;
-        status_40x += clients[i]->status_40x;
-        status_50x += clients[i]->status_50x;
+        status_10x += clients[i]->statuses[STATUS_10x];
+        status_20x += clients[i]->statuses[STATUS_20x];
+        status_30x += clients[i]->statuses[STATUS_30x];
+        status_40x += clients[i]->statuses[STATUS_40x];
+        status_50x += clients[i]->statuses[STATUS_50x];
         total_reqs += clients[i]->total_reqs;
         total_time += clients[i]->timer;
     }
