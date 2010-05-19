@@ -12,26 +12,13 @@
 
 #define RAINMAKER_USERAGENT "rainmaker/" PACKAGE_VERSION " "
 
-typedef struct _rmClient {
-    guint     statuses[5];
-    guint     total_reqs;
-    gboolean  done;
-    gdouble   timer;
-    GError   *error;
-} rmClient;
-
 typedef struct _rmHeader {
     gchar            *name;
     gchar            *value;
     struct _rmHeader *next;
 } rmHeader;
 
-typedef struct _rmGlobals {
-    /* Execution Options */
-    guint        requests;
-    guint        clients;
-    
-    /* Request Data */
+typedef struct _rmRequest {
     const gchar *method;
     SoupURI     *url;
     rmHeader    *headers;
@@ -40,20 +27,27 @@ typedef struct _rmGlobals {
     gchar       *body;
     gsize        bodysize;
     gboolean     freebody;
-#ifdef HAVE_LIBSOUP_COOKIEJAR
     gboolean     savecookies;
-#endif
-} rmGlobals;
+} rmRequest;
 
-rmGlobals *globals;
+typedef struct _rmClient {
+    rmRequest *request;
+    guint      repeats;
+    guint      statuses[5];
+    guint      total_reqs;
+    gboolean   done;
+    gdouble    timer;
+    GError    *error;
+} rmClient;
 
-void      rm_globals_init();
-void      rm_globals_destroy();
-rmHeader *rm_header_new(gchar *name, gchar *value);
-void      rm_header_free_all(rmHeader *header);
-rmClient *rm_client_init();
-void      rm_client_run(rmClient *client);
-void      rm_client_destroy(rmClient *client);
+/* Function Declerations */
+rmRequest *rm_request_new();
+void       rm_request_free(rmRequest *request);
+rmHeader  *rm_header_new(gchar *name, gchar *value);
+void       rm_header_free_all(rmHeader *header);
+rmClient  *rm_client_init(guint repeats, rmRequest *request);
+void       rm_client_run(rmClient *client);
+void       rm_client_free(rmClient *client);
 
 #define _HAVE_RAINMAKER_H
 #endif

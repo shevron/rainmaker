@@ -31,6 +31,11 @@ enum {
   STATUS_50x,
 };
 
+typedef struct _rmConfig {
+    guint requests;
+    guint clients;
+} rmConfig;
+
 char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
@@ -108,7 +113,7 @@ static rmHeader* rm_header_new_from_string(gchar *string)
 /* {{{ parse_load_cmd_args() - parse command line arguments and load config
  *
  */
-static gboolean parse_load_cmd_args(int argc, char *argv[])
+static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rmRequest *request)
 {
     GOptionContext  *context;
     GError          *error    = NULL;
@@ -122,8 +127,6 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 #ifdef HAVE_LIBSOUP_COOKIEJAR
     gboolean         savecookies = FALSE;
 #endif
-
-    g_assert(globals != NULL);
 
     /* Define and parse command line arguments */
     GOptionEntry    options[] = {
@@ -168,6 +171,20 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         return FALSE;
     }
 
+    /* Set number of requests / clients */
+    if (requests <= 1) {
+        config->requests = 1; 
+    } else {
+        config->requests = requests;
+    }
+
+    if (clients <= 1) {
+        config->clients = 1;
+    } else {
+        config->clients = clients;
+    }
+
+    /* Set method and body */
     if ((postdata != NULL && (postfile != NULL || putfile != NULL)) ||
         (postfile != NULL && putfile != NULL)) {
         
@@ -175,53 +192,52 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
         return FALSE;
     }
 
-    /* Set method and body */
     if (postdata != NULL) {
         g_assert(postfile == NULL);
         g_assert(putfile  == NULL);
 
-        globals->method   = methods[METHOD_POST];
-        globals->body     = postdata;
-        globals->bodysize = (gsize) strlen(postdata);
-        globals->ctype    = (gchar *) ctype_form_urlencoded;
+        request->method   = methods[METHOD_POST];
+        request->body     = postdata;
+        request->bodysize = (gsize) strlen(postdata);
+        request->ctype    = (gchar *) ctype_form_urlencoded;
 
     } else if (postfile != NULL) {
         g_assert(postdata == NULL);
         g_assert(putfile  == NULL);
 
-        globals->method   = methods[METHOD_POST];
-        globals->ctype    = (gchar *) ctype_form_urlencoded;
-        if (! g_file_get_contents(postfile, &globals->body, &globals->bodysize, &error)) {
+        request->method   = methods[METHOD_POST];
+        request->ctype    = (gchar *) ctype_form_urlencoded;
+        if (! g_file_get_contents(postfile, &request->body, &request->bodysize, &error)) {
             g_printerr("Error loading body: %s\n", error->message);
             return FALSE;
         }
-        globals->freebody = TRUE;
+        request->freebody = TRUE;
 
     } else if (putfile != NULL) {
         g_assert(postdata == NULL);
         g_assert(postfile == NULL);
 
-        globals->method   = methods[METHOD_PUT];
-        globals->ctype    = (gchar *) ctype_octetstream;
-        if (! g_file_get_contents(putfile, &globals->body, &globals->bodysize, &error)) {
+        request->method   = methods[METHOD_PUT];
+        request->ctype    = (gchar *) ctype_octetstream;
+        if (! g_file_get_contents(putfile, &request->body, &request->bodysize, &error)) {
             g_printerr("error loading body: %s\n", error->message);
             return FALSE;
         }
 
-        globals->freebody = TRUE;
+        request->freebody = TRUE;
 
     } else {
-        globals->method = methods[METHOD_GET];
+        request->method = methods[METHOD_GET];
     }
     
     /* Set content type */
-    if (globals->body != NULL && ctype != NULL) {
-        globals->ctype = ctype;
+    if (request->body != NULL && ctype != NULL) {
+        request->ctype = ctype;
     }
 
     /* Set user agent */
     /* TODO: make this a command line argument / config option */
-    globals->useragent = g_strdup(RAINMAKER_USERAGENT);
+    request->useragent = g_strdup(RAINMAKER_USERAGENT);
     
     /* Set headers */
     if (headers != NULL) {
@@ -239,33 +255,20 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
             }
             g_free(orig_header);
 
-            if (globals->headers == NULL) globals->headers = header;
+            if (request->headers == NULL) request->headers = header;
             if (prev != NULL) prev->next = header;
             prev = header;
         }
     }
 
-    /* Set number of requests / clients */
-    if (requests <= 1) {
-        globals->requests = 1; 
-    } else {
-        globals->requests = requests;
-    }
-
-    if (clients <= 1) {
-        globals->clients = 1;
-    } else {
-        globals->clients = clients;
-    }
-
     /* Set URL */
-    if ((globals->url = soup_uri_new(argv[1])) == NULL) {
+    if ((request->url = soup_uri_new(argv[1])) == NULL) {
         g_printerr("Error: unable to parse URL '%s'\n", argv[1]);
         return FALSE;
     }
 
 #ifdef HAVE_LIBSOUP_COOKIEJAR
-    globals->savecookies = savecookies;
+    request->savecookies = savecookies;
 #endif
 
     return TRUE;
@@ -275,7 +278,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[])
 /* {{{ rm_control_run() - run the control thread 
  *
  */
-static void rm_control_run(rmClient **clients)
+static void wait_for_clients(rmConfig *config, rmClient **clients)
 {
     int       i, total_reqs, done_reqs = 0; 
     gboolean  done;
@@ -284,7 +287,7 @@ static void rm_control_run(rmClient **clients)
 
     g_assert(clients != NULL);
 
-    total_reqs = globals->clients * globals->requests;
+    total_reqs = config->clients * config->requests;
 
     do {
         g_usleep(50000);
@@ -298,8 +301,8 @@ static void rm_control_run(rmClient **clients)
             total_time += clients[i]->timer;
         }
         
-        if (total_time && globals->clients) {
-            current_load = done_reqs / (total_time / globals->clients);
+        if (total_time && config->clients) {
+            current_load = done_reqs / (total_time / config->clients);
         } 
         printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
             done_reqs, total_reqs, current_load, "\r");
@@ -317,7 +320,8 @@ static void rm_control_run(rmClient **clients)
 int main(int argc, char *argv[])
 {
     rmClient **clients;
-    GThread   *ctl_thread;
+    rmConfig  *config;
+    rmRequest *request;
     int        status_10x  = 0;
     int        status_20x  = 0;
     int        status_30x  = 0;
@@ -332,25 +336,25 @@ int main(int argc, char *argv[])
     g_type_init();
     g_thread_init(NULL);
 
-    rm_globals_init();
+    request = rm_request_new();
+    config = g_malloc(sizeof(rmConfig));
 
-    if (! parse_load_cmd_args(argc, argv)) {
+    if (! parse_load_cmd_args(argc, argv, config, request)) {
         exit(1);
     }
 
-    clients = g_malloc(sizeof(rmClient*) * (globals->clients + 1)); 
+    clients = g_malloc(sizeof(rmClient*) * (config->clients + 1)); 
 
-    for (i = 0; i < globals->clients; i++) {
-        clients[i] = rm_client_init();
+    for (i = 0; i < config->clients; i++) {
+        clients[i] = rm_client_init(config->requests, request);
         g_thread_create((GThreadFunc) rm_client_run, clients[i], FALSE, NULL);
     }
-    clients[globals->clients] = NULL;
+    clients[config->clients] = NULL;
 
-    ctl_thread = g_thread_create((GThreadFunc) rm_control_run, clients, TRUE, NULL);
-    g_thread_join(ctl_thread);
+    wait_for_clients(config, clients);
 
     /* sum up results */
-    for (i = 0; i < globals->clients; i++) {
+    for (i = 0; clients[i] != NULL; i++) {
         if (clients[i]->error != NULL) {
             g_printerr("Client error: %s\n", clients[i]->error->message);
             break;
@@ -365,18 +369,18 @@ int main(int argc, char *argv[])
     }
 
     /* free clients */
-    for (i = 0; i < globals->clients; i++) {
-        rm_client_destroy(clients[i]);
+    for (i = 0; clients[i] != NULL; i++) {
+        rm_client_free(clients[i]);
     }
     g_free(clients);
 
     avg_load_client = 1 / (total_time / total_reqs);
-    avg_load_server = 1 / ((total_time / globals->clients) / total_reqs);
+    avg_load_server = 1 / ((total_time / config->clients) / total_reqs);
 
     /* Print out summary */
     if (total_reqs) {
         printf("--------------------------------------------------------------\n");
-        printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / globals->clients));
+        printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / config->clients));
         printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
         printf("  Average load per client: %.3f req/sec\n", avg_load_client);
         printf("--------------------------------------------------------------\n");
@@ -389,7 +393,8 @@ int main(int argc, char *argv[])
         printf("\n");
     }
 
-    rm_globals_destroy();
+    rm_request_free(request);
+    g_free(config);
 
     return 0;
 }

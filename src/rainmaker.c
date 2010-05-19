@@ -15,37 +15,45 @@
 #include "config.h"
 #include "rainmaker.h"
 
-/* {{{ rm_globals_init() - Initialize global variables struct
+/* {{{ rm_request_new()
  *
  */
-void rm_globals_init()
+rmRequest *rm_request_new()
 {
-    globals = g_malloc(sizeof(rmGlobals));
+    rmRequest *request;
 
-    globals->useragent = NULL;
-    globals->headers   = NULL;
-    globals->body      = NULL;
-    globals->bodysize  = 0;
-    globals->freebody  = FALSE;
-    globals->ctype     = NULL;
-    globals->url       = NULL;
-    globals->method    = NULL;
+    request = g_malloc(sizeof(rmRequest));
+
+    request->method    = NULL;
+    request->url       = NULL;
+    request->useragent = NULL;
+    request->headers   = NULL;
+    request->ctype     = NULL;
+    request->body      = NULL;
+    request->bodysize  = 0;
+    request->freebody  = FALSE;
+
+    return request;
 }
-/* rm_globals_init() }}} */
+/* rm_request_new() }}} */
 
-/* {{{ rm_globals_destroy() - Clean up global variables 
+/* {{{ rm_request_free 
  *
  */
-void rm_globals_destroy()
+void rm_request_free(rmRequest *request)
 {
-    if (globals->url != NULL) soup_uri_free(globals->url);
-    if (globals->useragent != NULL) g_free(globals->useragent);
-    if (globals->freebody) g_free(globals->body);
-    rm_header_free_all(globals->headers);
+    if (request->url != NULL) 
+        soup_uri_free(request->url);
+    if (request->useragent != NULL) 
+        g_free(request->useragent);
+    if (request->freebody) 
+        g_free(request->body);
 
-    g_free(globals);
+    rm_header_free_all(request->headers);
+
+    g_free(request);
 }
-/* rm_globals_destroy() }}} */
+/* rm_request_free() }}} */
 
 /** {{{ rm_header_new() - create a new rmHeader struct. 
  *
@@ -82,12 +90,15 @@ void rm_header_free_all(rmHeader *header)
 /* {{{ rm_client_init() - Initialize an rmClient struct 
  *
  */
-rmClient *rm_client_init()
+rmClient *rm_client_init(guint repeats, rmRequest *request)
 {
     rmClient *client;
 
     client = g_malloc(sizeof(rmClient));
     memset(client->statuses, 0, sizeof(guint) * 5);
+    client->repeats    = repeats;
+    client->request    = request;
+
     client->total_reqs = 0;
     client->done       = FALSE;
     client->timer      = 0;
@@ -97,15 +108,15 @@ rmClient *rm_client_init()
 }
 /* rm_client_init() }}} */
 
-/* {{{ rm_client_destroy() - free an rmClient struct 
+/* {{{ rm_client_free() - free an rmClient struct 
  *
  */
-void rm_client_destroy(rmClient *client)
+void rm_client_free(rmClient *client)
 {
     if (client->error != NULL) g_error_free(client->error);
     g_free(client);
 }
-/* rm_client_destroy() }}} */
+/* rm_client_free() }}} */
 
 /* {{{ rm_client_run() - run a load-generating client 
  *
@@ -115,22 +126,25 @@ void rm_client_run(rmClient *client)
 {
     SoupSession *session;
     SoupMessage *msg;
+    rmRequest   *request;
     guint        status;
     int          i;
     GTimer      *timer = g_timer_new();
     rmHeader    *header;
 
-    g_assert(globals->method != NULL);
-    g_assert(globals->url    != NULL);
+    request = client->request;
+
+    g_assert(request->method != NULL);
+    g_assert(request->url    != NULL);
 
     session = soup_session_sync_new();
 
     /* Set user agent string */
-    if (globals->useragent != NULL) {
+    if (request->useragent != NULL) {
         GValue *useragent = g_malloc0(sizeof(GValue));
 
         g_value_init(useragent, G_TYPE_STRING);
-        g_value_set_string(useragent, globals->useragent);
+        g_value_set_string(useragent, request->useragent);
         g_object_set_property((GObject *) session, SOUP_SESSION_USER_AGENT, 
             useragent);
 
@@ -139,24 +153,26 @@ void rm_client_run(rmClient *client)
     }
 
 #ifdef HAVE_LIBSOUP_COOKIEJAR
-    SoupCookieJar *jar = soup_cookie_jar_new();
-    soup_session_add_feature(session, (SoupSessionFeature *) jar);
+    if (request->savecookies) {
+        SoupCookieJar *jar = soup_cookie_jar_new();
+        soup_session_add_feature(session, (SoupSessionFeature *) jar);
+    }
 #endif
 
-    msg = soup_message_new_from_uri(globals->method, globals->url);
+    msg = soup_message_new_from_uri(request->method, request->url);
     soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
 
-    if (globals->body != NULL) {
-        g_assert(globals->ctype != NULL);
-        soup_message_set_request(msg, globals->ctype, SOUP_MEMORY_STATIC, 
-            globals->body, globals->bodysize);
+    if (request->body != NULL) {
+        g_assert(request->ctype != NULL);
+        soup_message_set_request(msg, request->ctype, SOUP_MEMORY_STATIC, 
+            request->body, request->bodysize);
     }
 
-    for (header = globals->headers; header != NULL; header = header->next) {
+    for (header = request->headers; header != NULL; header = header->next) {
         soup_message_headers_append(msg->request_headers, header->name, header->value);
     }
 
-    for (i = 0; i < globals->requests; i++) {
+    for (i = 0; i < client->repeats; i++) {
         g_timer_start(timer);
         status = soup_session_send_message(session, msg);
         g_timer_stop(timer);
