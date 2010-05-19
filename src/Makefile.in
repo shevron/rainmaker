@@ -55,7 +55,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_rainmaker_OBJECTS = main.$(OBJEXT) rm-client.$(OBJEXT)
+am_rainmaker_OBJECTS = main.$(OBJEXT) rainmaker.$(OBJEXT)
 rainmaker_OBJECTS = $(am_rainmaker_OBJECTS)
 am__DEPENDENCIES_1 =
 rainmaker_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -194,7 +194,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 rainmaker_SOURCES = main.c      \
-                    rm-client.c \
+                    rainmaker.c \
                     rainmaker.h
 
 rainmaker_LDADD = $(LIBSOUP_LIBS)
@@ -288,7 +288,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rm-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

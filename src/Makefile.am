@@ -11,7 +11,7 @@
 bin_PROGRAMS = rainmaker
 
 rainmaker_SOURCES = main.c      \
-                    rm-client.c \
+                    rainmaker.c \
                     rainmaker.h
 
 rainmaker_LDADD = $(LIBSOUP_LIBS)
