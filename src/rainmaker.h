@@ -47,7 +47,13 @@ typedef struct _rmGlobals {
 
 rmGlobals *globals;
 
-void rm_client_run(rmClient *client);
+void      rm_globals_init();
+void      rm_globals_destroy();
+rmHeader *rm_header_new(gchar *name, gchar *value);
+void      rm_header_free_all(rmHeader *header);
+rmClient *rm_client_init();
+void      rm_client_run(rmClient *client);
+void      rm_client_destroy(rmClient *client);
 
 #define _HAVE_RAINMAKER_H
 #endif

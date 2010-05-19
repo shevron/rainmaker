@@ -15,6 +15,98 @@
 #include "config.h"
 #include "rainmaker.h"
 
+/* {{{ rm_globals_init() - Initialize global variables struct
+ *
+ */
+void rm_globals_init()
+{
+    globals = g_malloc(sizeof(rmGlobals));
+
+    globals->useragent = NULL;
+    globals->headers   = NULL;
+    globals->body      = NULL;
+    globals->bodysize  = 0;
+    globals->freebody  = FALSE;
+    globals->ctype     = NULL;
+    globals->url       = NULL;
+    globals->method    = NULL;
+}
+/* rm_globals_init() }}} */
+
+/* {{{ rm_globals_destroy() - Clean up global variables 
+ *
+ */
+void rm_globals_destroy()
+{
+    if (globals->url != NULL) soup_uri_free(globals->url);
+    if (globals->useragent != NULL) g_free(globals->useragent);
+    if (globals->freebody) g_free(globals->body);
+    rm_header_free_all(globals->headers);
+
+    g_free(globals);
+}
+/* rm_globals_destroy() }}} */
+
+/** {{{ em_header_new() - create a new rmHeader struct. 
+ *
+ * The header's name and value are owned by the caller, and will not be
+ * copied, modified or freed.
+ */
+rmHeader *rm_header_new(gchar *name, gchar *value)
+{
+    rmHeader *header = g_malloc(sizeof(rmHeader));
+
+    header->next = NULL;
+    header->name = name;
+    header->value = value;
+
+    return header;
+}
+/* rm_header_new() }}} */
+
+/* {{{ rm_header_free_all() - free a linked-list of header structs 
+ *
+ */
+void rm_header_free_all(rmHeader *header)
+{
+    rmHeader *next = NULL;
+
+    while (header != NULL) {
+        next = header->next;
+        g_free(header);
+        header = next;
+    }
+}
+/* rm_header_free_all() }}} */
+
+/* {{{ rm_client_init() - Initialize an rmClient struct 
+ *
+ */
+rmClient *rm_client_init()
+{
+    rmClient *client;
+
+    client = g_malloc(sizeof(rmClient));
+    memset(client->statuses, 0, sizeof(guint) * 5);
+    client->total_reqs = 0;
+    client->done       = FALSE;
+    client->timer      = 0;
+    client->error      = NULL;
+
+    return client;
+}
+/* rm_client_init() }}} */
+
+/* {{{ rm_client_destroy() - free an rmClient struct 
+ *
+ */
+void rm_client_destroy(rmClient *client)
+{
+    if (client->error != NULL) g_error_free(client->error);
+    g_free(client);
+}
+/* rm_client_destroy() }}} */
+
 /* {{{ rm_client_run() - run a load-generating client 
  *
  * This is where the magic really happens :)

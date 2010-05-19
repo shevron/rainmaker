@@ -36,68 +36,6 @@ char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
 const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
 const gchar *ctype_octetstream     = "application/octet-stream";
 
-static void rm_headers_free_all(rmHeader *header);
-
-/* {{{ rm_globals_init() - Initialize global variables struct
- *
- */
-static void rm_globals_init()
-{
-    globals = g_malloc(sizeof(rmGlobals));
-
-    globals->useragent = NULL;
-    globals->headers   = NULL;
-    globals->body      = NULL;
-    globals->bodysize  = 0;
-    globals->freebody  = FALSE;
-    globals->ctype     = NULL;
-    globals->url       = NULL;
-    globals->method    = NULL;
-}
-/* rm_globals_init() }}} */
-
-/* {{{ rm_globals_destroy() - Clean up global variables 
- *
- */
-static void rm_globals_destroy()
-{
-    if (globals->url != NULL) soup_uri_free(globals->url);
-    if (globals->useragent != NULL) g_free(globals->useragent);
-    if (globals->freebody) g_free(globals->body);
-    rm_headers_free_all(globals->headers);
-
-    g_free(globals);
-}
-/* rm_globals_destroy() }}} */
-
-/* {{{ rm_client_init() - Initialize an rmClient struct 
- *
- */
-static rmClient *rm_client_init()
-{
-    rmClient *client;
-
-    client = g_malloc(sizeof(rmClient));
-    memset(client->statuses, 0, sizeof(guint) * 5);
-    client->total_reqs = 0;
-    client->done       = FALSE;
-    client->timer      = 0;
-    client->error      = NULL;
-
-    return client;
-}
-/* rm_client_init() }}} */
-
-/* {{{ rm_client_destroy() - free an rmClient struct 
- *
- */
-static void rm_client_destroy(rmClient *client)
-{
-    if (client->error != NULL) g_error_free(client->error);
-    g_free(client);
-}
-/* rm_client_destroy() }}} */
-
 /* {{{ rm_header_new_from_string() - create a new header struct from string
  *
  * Will take in a "Header: Value" form string, parse / split it and create
@@ -118,9 +56,6 @@ static rmHeader* rm_header_new_from_string(gchar *string)
     gchar    *name, *value = NULL;
     rmHeader *header;
     int       i;
-
-    header = g_malloc(sizeof(rmHeader));
-    header->next = NULL;
 
     name = string;
 
@@ -164,27 +99,11 @@ static rmHeader* rm_header_new_from_string(gchar *string)
         return NULL;
     }
 
-    header->name = name;
-    header->value = value;
+    header = rm_header_new(name, value);
 
     return header;
 }
 /* rm_header_new_from_string() }}} */
-
-/* {{{ rm_headers_free_all() - free a linked-list of header structs 
- *
- */
-static void rm_headers_free_all(rmHeader *header)
-{
-    rmHeader *next = NULL;
-
-    while (header != NULL) {
-        next = header->next;
-        g_free(header);
-        header = next;
-    }
-}
-/* rm_headers_free_all() }}} */
 
 /* {{{ parse_load_cmd_args() - parse command line arguments and load config
  *
