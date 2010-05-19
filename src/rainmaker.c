@@ -47,7 +47,7 @@ void rm_globals_destroy()
 }
 /* rm_globals_destroy() }}} */
 
-/** {{{ em_header_new() - create a new rmHeader struct. 
+/** {{{ rm_header_new() - create a new rmHeader struct. 
  *
  * The header's name and value are owned by the caller, and will not be
  * copied, modified or freed.
