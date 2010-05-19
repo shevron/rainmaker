@@ -15,14 +15,6 @@
 #include "config.h"
 #include "rainmaker.h"
 
-typedef enum {
-    METHOD_GET,
-    METHOD_POST,
-    METHOD_PUT,
-    METHOD_DELETE,
-    METHOD_HEAD
-} rmMethod;
-
 enum {
   STATUS_10x,
   STATUS_20x,
@@ -36,10 +28,22 @@ typedef struct _rmConfig {
     guint clients;
 } rmConfig;
 
-char const *methods[] = {"GET", "POST", "PUT", "DELETE", "HEAD"};
+typedef enum {
+    METHOD_GET,
+    METHOD_POST,
+    METHOD_PUT,
+} rmMethod;
 
-const gchar *ctype_form_urlencoded = "application/x-www-form-urlencoded";
-const gchar *ctype_octetstream     = "application/octet-stream";
+static char const *methods[] = {"GET", "POST", "PUT"};
+
+enum {
+    CTYPE_FORM_URLENCODED,
+    CTYPE_APP_OCTET_STREAM,
+};
+static char const *ctypes[] = {
+    "application/x-www-form-urlencoded",
+    "application/octet-stream"
+};
 
 /* {{{ rm_header_new_from_string() - create a new header struct from string
  *
@@ -199,14 +203,14 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
         request->method   = methods[METHOD_POST];
         request->body     = postdata;
         request->bodysize = (gsize) strlen(postdata);
-        request->ctype    = (gchar *) ctype_form_urlencoded;
+        request->ctype    = (gchar *) ctypes[CTYPE_FORM_URLENCODED];
 
     } else if (postfile != NULL) {
         g_assert(postdata == NULL);
         g_assert(putfile  == NULL);
 
         request->method   = methods[METHOD_POST];
-        request->ctype    = (gchar *) ctype_form_urlencoded;
+        request->ctype    = (gchar *) ctypes[CTYPE_FORM_URLENCODED];
         if (! g_file_get_contents(postfile, &request->body, &request->bodysize, &error)) {
             g_printerr("Error loading body: %s\n", error->message);
             return FALSE;
@@ -218,7 +222,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
         g_assert(postfile == NULL);
 
         request->method   = methods[METHOD_PUT];
-        request->ctype    = (gchar *) ctype_octetstream;
+        request->ctype    = (gchar *) ctypes[CTYPE_APP_OCTET_STREAM];
         if (! g_file_get_contents(putfile, &request->body, &request->bodysize, &error)) {
             g_printerr("error loading body: %s\n", error->message);
             return FALSE;
@@ -351,6 +355,7 @@ int main(int argc, char *argv[])
     }
     clients[config->clients] = NULL;
 
+    /* Wait for all clients to fnish */
     wait_for_clients(config, clients);
 
     /* sum up results */
