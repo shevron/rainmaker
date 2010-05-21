@@ -40,6 +40,7 @@ enum {
     CTYPE_FORM_URLENCODED,
     CTYPE_APP_OCTET_STREAM,
 };
+
 static char const *ctypes[] = {
     "application/x-www-form-urlencoded",
     "application/octet-stream"
