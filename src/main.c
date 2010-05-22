@@ -280,44 +280,66 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
 }
 /* parse_load_cmd_args() }}} */
 
-/* {{{ rm_control_run() - run the control thread 
+/* {{{ wait_for_clients() - wait for all clients to finish and return the results 
  *
  */
-static void wait_for_clients(rmConfig *config, rmClient **clients)
+static rmResults* wait_for_clients(rmConfig *config, rmClient **clients, GError **error)
 {
-    int       i, total_reqs, done_reqs = 0; 
-    gboolean  done;
-    gdouble   total_time;
-    gdouble   current_load = 0;
+    rmResults *results;
+    gint       i, total_reqs, done_reqs = 0;
+    gboolean   done;
+    gdouble    total_time;
+    gdouble    current_load = 0;
 
+    g_assert(*error == NULL);
     g_assert(clients != NULL);
 
     total_reqs = config->clients * config->requests;
 
+    /* Check client status, loop until all clients are done */
     do {
         g_usleep(50000);
         done = TRUE;
         done_reqs = 0;
         total_time = 0;
 
+        /* Iterate over all clients, check status */
         for (i = 0; clients[i] != NULL; i++) {
-            done = (done && clients[i]->done);
-            done_reqs += clients[i]->total_reqs;
-            total_time += clients[i]->timer;
+            if (clients[i]->error != NULL) {
+                *error = clients[i]->error;
+                break;
+            }
+
+            done        = (done && clients[i]->done);
+            done_reqs  += clients[i]->results->total_reqs;
+            total_time += clients[i]->results->total_time;
         }
+
+        if (*error != NULL) break;
         
         if (total_time && config->clients) {
             current_load = done_reqs / (total_time / config->clients);
-        } 
+        }
+
         printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
             done_reqs, total_reqs, current_load, "\r");
         fflush(stdout);
 
     } while (! done);
 
-    printf("\n");
+    if (*error != NULL) {
+        return NULL;
+    }
+    
+    /* sum up results */
+    results = rm_results_new();
+    for (i = 0; clients[i] != NULL; i++) {
+        rm_results_add(results, clients[i]->results);
+    }
+    
+    return results;
 }
-/* rm_control_run() }}} */
+/* wait_for_clients() }}} */
 
 /* {{{ main() - what do you think?
  *
@@ -327,16 +349,11 @@ int main(int argc, char *argv[])
     rmClient **clients;
     rmConfig  *config;
     rmRequest *request;
-    int        status_10x  = 0;
-    int        status_20x  = 0;
-    int        status_30x  = 0;
-    int        status_40x  = 0;
-    int        status_50x  = 0;
-    int        total_reqs  = 0;
-    double     total_time  = 0;
-    double     avg_load_client = 0;
-    double     avg_load_server = 0;
-    int        i;
+    rmResults *results;
+    GError    *error = NULL;
+    gdouble     avg_load_client = 0;
+    gdouble     avg_load_server = 0;
+    gint        i;
 
     g_type_init();
     g_thread_init(NULL);
@@ -344,63 +361,65 @@ int main(int argc, char *argv[])
     request = rm_request_new();
     config = g_malloc(sizeof(rmConfig));
 
+    /* Load configuration */
     if (! parse_load_cmd_args(argc, argv, config, request)) {
         exit(1);
     }
 
+    /* Create client threads */
     clients = g_malloc(sizeof(rmClient*) * (config->clients + 1)); 
-
     for (i = 0; i < config->clients; i++) {
         clients[i] = rm_client_init(config->requests, request);
         g_thread_create((GThreadFunc) rm_client_run, clients[i], FALSE, NULL);
     }
     clients[config->clients] = NULL;
 
-    /* Wait for all clients to fnish */
-    wait_for_clients(config, clients);
+    /* Wait for all clients to finish */
+    results = wait_for_clients(config, clients, &error);
 
-    /* sum up results */
-    for (i = 0; clients[i] != NULL; i++) {
-        if (clients[i]->error != NULL) {
-            g_printerr("Client error: %s\n", clients[i]->error->message);
-            break;
-        }
-        status_10x += clients[i]->statuses[STATUS_10x];
-        status_20x += clients[i]->statuses[STATUS_20x];
-        status_30x += clients[i]->statuses[STATUS_30x];
-        status_40x += clients[i]->statuses[STATUS_40x];
-        status_50x += clients[i]->statuses[STATUS_50x];
-        total_reqs += clients[i]->total_reqs;
-        total_time += clients[i]->timer;
-    }
-
-    /* free clients */
+    /* free clients, request and config */
     for (i = 0; clients[i] != NULL; i++) {
         rm_client_free(clients[i]);
     }
     g_free(clients);
+    rm_request_free(request);
+    g_free(config);
 
-    avg_load_client = 1 / (total_time / total_reqs);
-    avg_load_server = 1 / ((total_time / config->clients) / total_reqs);
+    if (results == NULL) {
+        g_assert(error != NULL);
+        g_printerr("Client error: %s\n", error->message);
+        g_error_free(error);
+
+        exit(2);
+    }
+
+    avg_load_client = 1 / (results->total_time / results->total_reqs);
+    avg_load_server = 1 / ((results->total_time / results->clients) / results->total_reqs);
 
     /* Print out summary */
-    if (total_reqs) {
-        printf("--------------------------------------------------------------\n");
-        printf("Completed %d requests in %.3f seconds\n", total_reqs, (total_time / config->clients));
+    if (results->total_reqs) {
+        printf("\n------------------------------------------------------------------------\n");
+        printf("Completed %d requests in %.3f seconds\n", results->total_reqs, (results->total_time / results->clients));
         printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
         printf("  Average load per client: %.3f req/sec\n", avg_load_client);
-        printf("--------------------------------------------------------------\n");
-        if (total_reqs) printf("HTTP Status codes:\n");
-        if (status_10x) printf("  1xx Informational: %d\n", status_10x);
-        if (status_20x) printf("  2xx Success:       %d\n", status_20x);
-        if (status_30x) printf("  3xx Redirection:   %d\n", status_30x);
-        if (status_40x) printf("  4xx Client Error:  %d\n", status_40x);
-        if (status_50x) printf("  5xx Server Error:  %d\n", status_50x);
+        printf("------------------------------------------------------------------------\n");
+        
+        if (results->total_reqs) printf("HTTP Status codes:\n");        
+        if (results->respcodes[STATUS_10x])
+            printf("  1xx Informational: %d\n", results->respcodes[STATUS_10x]);
+        if (results->respcodes[STATUS_20x]) 
+            printf("  2xx Success:       %d\n", results->respcodes[STATUS_20x]);
+        if (results->respcodes[STATUS_30x]) 
+            printf("  3xx Redirection:   %d\n", results->respcodes[STATUS_30x]);
+        if (results->respcodes[STATUS_40x]) 
+            printf("  4xx Client Error:  %d\n", results->respcodes[STATUS_40x]);
+        if (results->respcodes[STATUS_50x]) 
+            printf("  5xx Server Error:  %d\n", results->respcodes[STATUS_50x]);
+
         printf("\n");
     }
 
-    rm_request_free(request);
-    g_free(config);
+    rm_results_free(results);
 
     return 0;
 }

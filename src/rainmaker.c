@@ -87,6 +87,53 @@ void rm_header_free_all(rmHeader *header)
 }
 /* rm_header_free_all() }}} */
 
+/* {{{ rm_results_new() 
+ *
+ */
+rmResults *rm_results_new()
+{
+    rmResults *results = g_malloc(sizeof(rmResults));
+
+    results->clients    = 0;
+    results->total_reqs = 0;
+    results->total_time = 0;
+    memset(results->respcodes, 0, sizeof(guint) * 5);
+
+    return results;
+}
+/* rm_results_new() }}} */
+
+/* {{{ rm_results_add() 
+ *
+ * Add a set of results up to another set of results
+ */
+rmResults *rm_results_add(rmResults *total, rmResults *add)
+{
+    gint i;
+
+    g_assert(total != NULL);
+    g_assert(add   != NULL);
+
+    total->clients    += add->clients;
+    total->total_reqs += add->total_reqs;
+    total->total_time += add->total_time;
+    for (i = 0; i < 4; i++) {
+        total->respcodes[i] += add->respcodes[i];
+    }
+
+    return total;
+}
+/* rm_results_add() }}} */
+
+/* {{{ rm_results_free()
+ *
+ */
+void rm_results_free(rmResults *results)
+{
+    g_free(results);
+}
+/* rm_results_free() }}} */
+
 /* {{{ rm_client_init() - Initialize an rmClient struct 
  *
  */
@@ -95,14 +142,13 @@ rmClient *rm_client_init(guint repeats, rmRequest *request)
     rmClient *client;
 
     client = g_malloc(sizeof(rmClient));
-    memset(client->statuses, 0, sizeof(guint) * 5);
     client->repeats    = repeats;
     client->request    = request;
-
-    client->total_reqs = 0;
     client->done       = FALSE;
-    client->timer      = 0;
     client->error      = NULL;
+    
+    client->results          = rm_results_new();
+    client->results->clients = 1;
 
     return client;
 }
@@ -113,7 +159,7 @@ rmClient *rm_client_init(guint repeats, rmRequest *request)
  */
 void rm_client_free(rmClient *client)
 {
-    if (client->error != NULL) g_error_free(client->error);
+    rm_results_free(client->results);
     g_free(client);
 }
 /* rm_client_free() }}} */
@@ -180,14 +226,13 @@ void rm_client_run(rmClient *client)
         if (SOUP_STATUS_IS_TRANSPORT_ERROR(status)) {
             client->error = g_error_new_literal(SOUP_HTTP_ERROR, status, msg->reason_phrase);
             break;
-
         }
         
         g_assert(status >= 100 && status <= 599);
         
-        client->statuses[(status / 100) - 1]++;
-        client->total_reqs++;
-        client->timer += g_timer_elapsed(timer, NULL);
+        client->results->respcodes[(status / 100) - 1]++;
+        client->results->total_reqs++;
+        client->results->total_time += g_timer_elapsed(timer, NULL);
     }
         
     g_timer_destroy(timer);

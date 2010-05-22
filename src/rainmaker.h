@@ -30,13 +30,18 @@ typedef struct _rmRequest {
     gboolean     savecookies;
 } rmRequest;
 
+typedef struct _rmResults {
+    guint    respcodes[5];
+    guint    clients;
+    guint    total_reqs;
+    gdouble  total_time;
+} rmResults;
+
 typedef struct _rmClient {
     rmRequest *request;
+    rmResults *results;
     guint      repeats;
-    guint      statuses[5];
-    guint      total_reqs;
     gboolean   done;
-    gdouble    timer;
     GError    *error;
 } rmClient;
 
@@ -45,6 +50,9 @@ rmRequest *rm_request_new();
 void       rm_request_free(rmRequest *request);
 rmHeader  *rm_header_new(gchar *name, gchar *value);
 void       rm_header_free_all(rmHeader *header);
+rmResults *rm_results_new();
+rmResults *rm_results_add(rmResults *total, rmResults *add);
+void       rm_results_free(rmResults *results);
 rmClient  *rm_client_init(guint repeats, rmRequest *request);
 void       rm_client_run(rmClient *client);
 void       rm_client_free(rmClient *client);
