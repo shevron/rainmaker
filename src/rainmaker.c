@@ -117,7 +117,7 @@ rmResults *rm_results_add(rmResults *total, rmResults *add)
     total->clients    += add->clients;
     total->total_reqs += add->total_reqs;
     total->total_time += add->total_time;
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < 5; i++) {
         total->respcodes[i] += add->respcodes[i];
     }
 
@@ -227,18 +227,18 @@ void rm_client_run(rmClient *client)
             client->error = g_error_new_literal(SOUP_HTTP_ERROR, status, msg->reason_phrase);
             break;
         }
-
-        if (client->stoponerror && (status >= 400 && status <= 599)) {
-            client->error = g_error_new(SOUP_HTTP_ERROR, status, "got HTTP %d (%s) response from server, aborting",
-                status, msg->reason_phrase);
-            break;
-        }
-        
+     
         g_assert(status >= 100 && status <= 599);
         
         client->results->respcodes[(status / 100) - 1]++;
         client->results->total_reqs++;
         client->results->total_time += g_timer_elapsed(timer, NULL);
+
+        if (client->stoponerror && status >= 400) {
+            client->error = g_error_new(SOUP_HTTP_ERROR, status, "got HTTP %d \"%s\" response from server",
+                status, msg->reason_phrase);
+            break;
+        }
     }
         
     g_timer_destroy(timer);
@@ -250,4 +250,3 @@ void rm_client_run(rmClient *client)
 /** 
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker 
  */
-

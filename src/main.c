@@ -311,17 +311,15 @@ static rmResults* wait_for_clients(rmConfig *config, rmClient **clients, GError 
 
         /* Iterate over all clients, check status */
         for (i = 0; clients[i] != NULL; i++) {
+            done        = (done && clients[i]->done);
+            done_reqs  += clients[i]->results->total_reqs;
+            total_time += clients[i]->results->total_time;
+
             if (clients[i]->error != NULL) {
                 *error = clients[i]->error;
                 break;
             }
-
-            done        = (done && clients[i]->done);
-            done_reqs  += clients[i]->results->total_reqs;
-            total_time += clients[i]->results->total_time;
         }
-
-        if (*error != NULL) break;
         
         if (total_time && config->clients) {
             current_load = done_reqs / (total_time / config->clients);
@@ -330,13 +328,11 @@ static rmResults* wait_for_clients(rmConfig *config, rmClient **clients, GError 
         printf("[Sent %d/%d requests, running at %.3f req/sec]%10s", 
             done_reqs, total_reqs, current_load, "\r");
         fflush(stdout);
+        
+        if (*error != NULL) break;
 
     } while (! done);
 
-    if (*error != NULL) {
-        return NULL;
-    }
-    
     /* sum up results */
     results = rm_results_new();
     for (i = 0; clients[i] != NULL; i++) {
@@ -352,15 +348,15 @@ static rmResults* wait_for_clients(rmConfig *config, rmClient **clients, GError 
  */
 int main(int argc, char *argv[])
 {
-    rmClient **clients;
-    rmConfig  *config;
-    rmRequest *request;
-    rmResults *results;
-    GError    *error = NULL;
+    rmClient  **clients;
+    rmConfig   *config;
+    rmRequest  *request;
+    rmResults  *results;
+    GError     *error = NULL;
     gdouble     avg_load_client = 0;
     gdouble     avg_load_server = 0;
     gint        i;
-
+    
     g_type_init();
     g_thread_init(NULL);
 
@@ -392,20 +388,19 @@ int main(int argc, char *argv[])
     rm_request_free(request);
     g_free(config);
 
-    if (results == NULL) {
-        g_assert(error != NULL);
-        g_printerr("Client error: %s\n", error->message);
+    printf("\n");
+
+    if (error != NULL) {
+        g_printerr("ERROR: %s\n", error->message);
         g_error_free(error);
-
-        exit(2);
     }
-
-    avg_load_client = 1 / (results->total_time / results->total_reqs);
-    avg_load_server = 1 / ((results->total_time / results->clients) / results->total_reqs);
 
     /* Print out summary */
     if (results->total_reqs) {
-        printf("\n------------------------------------------------------------------------\n");
+        avg_load_client = 1 / (results->total_time / results->total_reqs);
+        avg_load_server = 1 / ((results->total_time / results->clients) / results->total_reqs);
+
+        printf("------------------------------------------------------------------------\n");
         printf("Completed %d requests in %.3f seconds\n", results->total_reqs, (results->total_time / results->clients));
         printf("  Average load on server:  %.3f req/sec\n", avg_load_server);
         printf("  Average load per client: %.3f req/sec\n", avg_load_client);

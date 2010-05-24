@@ -33,6 +33,7 @@ Currently, rainmaker supports the following functions:
    separate threads
  - Send GET requests, and POST or PUT requests with custom content
  - Set multiple custom headers to the request
+ - Optionally stop test execution in case of HTTP 4xx or 5xx error
  - With newer (2.24+) versions of libsoup, per-client cookie persistence 
 
 Run `rainmaker --help` for usage information. 
