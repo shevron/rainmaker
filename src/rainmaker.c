@@ -227,6 +227,12 @@ void rm_client_run(rmClient *client)
             client->error = g_error_new_literal(SOUP_HTTP_ERROR, status, msg->reason_phrase);
             break;
         }
+
+        if (client->stoponerror && (status >= 400 && status <= 599)) {
+            client->error = g_error_new(SOUP_HTTP_ERROR, status, "got HTTP %d (%s) response from server, aborting",
+                status, msg->reason_phrase);
+            break;
+        }
         
         g_assert(status >= 100 && status <= 599);
         

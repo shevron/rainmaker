@@ -16,16 +16,17 @@
 #include "rainmaker.h"
 
 enum {
-  STATUS_10x,
-  STATUS_20x,
-  STATUS_30x,
-  STATUS_40x,
-  STATUS_50x,
+    STATUS_10x,
+    STATUS_20x,
+    STATUS_30x,
+    STATUS_40x,
+    STATUS_50x,
 };
 
 typedef struct _rmConfig {
-    guint requests;
-    guint clients;
+    guint    requests;
+    guint    clients;
+    gboolean stoponerror;
 } rmConfig;
 
 typedef enum {
@@ -132,6 +133,7 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
 #ifdef HAVE_LIBSOUP_COOKIEJAR
     gboolean         savecookies = FALSE;
 #endif
+    gboolean         stoponerror = FALSE;
 
     /* Define and parse command line arguments */
     GOptionEntry    options[] = {
@@ -139,6 +141,8 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
             "number of concurrent clients to run", NULL},
         {"requests", 'r', 0, G_OPTION_ARG_INT, &requests, 
             "number of requests to send per client", NULL},
+        {"stop-on-error", 0, 0, G_OPTION_ARG_NONE, &stoponerror, 
+            "stop on HTTP 4xx or 5xx errors", "yes"},
         {"header",   'H', 0, G_OPTION_ARG_STRING_ARRAY, &headers,
             "set a custom HTTP header, in 'Name: Value' format", NULL},
         {"postdata", 'P', 0, G_OPTION_ARG_STRING, &postdata, 
@@ -276,6 +280,8 @@ static gboolean parse_load_cmd_args(int argc, char *argv[], rmConfig *config, rm
     request->savecookies = savecookies;
 #endif
 
+    config->stoponerror = stoponerror;
+
     return TRUE;
 }
 /* parse_load_cmd_args() }}} */
@@ -370,6 +376,7 @@ int main(int argc, char *argv[])
     clients = g_malloc(sizeof(rmClient*) * (config->clients + 1)); 
     for (i = 0; i < config->clients; i++) {
         clients[i] = rm_client_init(config->requests, request);
+        clients[i]->stoponerror = config->stoponerror;
         g_thread_create((GThreadFunc) rm_client_run, clients[i], FALSE, NULL);
     }
     clients[config->clients] = NULL;

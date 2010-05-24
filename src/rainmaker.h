@@ -41,6 +41,7 @@ typedef struct _rmClient {
     rmRequest *request;
     rmResults *results;
     guint      repeats;
+    gboolean   stoponerror;
     gboolean   done;
     GError    *error;
 } rmClient;
