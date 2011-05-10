@@ -1,22 +1,24 @@
 #include <glib.h>
 #include <libsoup/soup.h>
 
+#include "rainmaker-request.h"
+
 #ifndef _HAVE_RAINMAKER_CLIENT_H
 
-typedef struct _rmScoreBoard { 
+typedef struct _rmScoreboard { 
     guint   requests;
     guint   resp_codes[5];
     gdouble elapsed_s;
     gulong  elapsed_u;
     GTimer *stopwatch;
-} rmScoreBoard; 
+} rmScoreboard; 
 
 typedef struct _rmClient {
     SoupSession  *session;
-    rmScoreBoard *scoreboard;
+    rmScoreboard *scoreboard;
 } rmClient;
 
-rmScoreBoard *rm_scoreboard_new();
+rmScoreboard *rm_scoreboard_new();
 void          rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src);
 void          rm_scoreboard_free(rmScoreboard *sb);
 rmClient*     rm_client_new();

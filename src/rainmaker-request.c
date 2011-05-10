@@ -14,9 +14,9 @@ rmRequest* rm_request_new(gchar *url, SoupURI *baseUrl)
     req = g_malloc(sizeof(rmRequest));
     
     if (baseUrl == NULL) {
-        req->url = soup_url_new(url);
+        req->url = soup_uri_new(url);
     } else {
-        req->url = soup_url_new_with_base(baseUrl, url);
+        req->url = soup_uri_new_with_base(baseUrl, url);
     }
 
     req->headers    = soup_message_headers_new(SOUP_MESSAGE_HEADERS_REQUEST);

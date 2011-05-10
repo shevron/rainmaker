@@ -20,9 +20,9 @@ typedef struct _rmScenario {
 /* }}} */
 
 rmScenario*   rm_scenario_new();
-rmScoreboard* rm_scenario_run(rmScenario *scenario)
+rmScoreboard* rm_scenario_run(rmScenario *scenario);
 void          rm_scenario_add_request(rmScenario *scenario, rmRequest *request);
-void          rm_scenario_free(rmScenario *scenario)
+void          rm_scenario_free(rmScenario *scenario);
 
 #define _HAVE_RAINMAKER_SCENARIO_H
 #endif;

@@ -43,7 +43,7 @@ rmScenario* rm_scenario_new()
 void rm_scenario_free(rmScenario *scenario)
 {
     // Free all requests
-    g_slist_foreach(scenario->requests, (GFunc) rm_scenario_free_request, NULL);
+    g_slist_foreach(scenario->requests, (GFunc) rm_scenario_free_requests, NULL);
     g_slist_free(scenario->requests);
 
     if (scenario->baseUrl != NULL)

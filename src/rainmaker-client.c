@@ -7,7 +7,7 @@
  *
  * Create a new scoreboard struct
  */
-rmScoreBoard *rm_scoreboard_new()
+rmScoreboard *rm_scoreboard_new()
 {
     rmScoreboard *sb; 
 
@@ -88,7 +88,7 @@ gboolean rm_client_send_request(rmClient *client, rmRequest *request)
     guint        status;
     gulong       elapsed_u;
 
-    msg = soup_message_new_from_uri(request->method, request->uri);
+    msg = soup_message_new_from_uri(request->method, request->url);
 
     // Start timer
     client->scoreboard->stopwatch = g_timer_new();
