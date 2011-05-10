@@ -8,13 +8,15 @@
 
 # rainmaker Makefile.am
 
-bin_PROGRAMS = rainmaker
+bin_PROGRAMS = rainmaker rmxml
 
 rainmaker_SOURCES = main.c      \
                     rainmaker.c \
                     rainmaker.h
 
-rainmaker_LDADD = $(LIBSOUP_LIBS)
+rmxml_SOURCES = rainmaker-xml.c rainmaker.c
+
+LIBS = @LIBSOUP_LIBS@
 
 AM_CFLAGS = $(LIBSOUP_CFLAGS)
 

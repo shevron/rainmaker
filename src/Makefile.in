@@ -42,7 +42,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = rainmaker$(EXEEXT)
+bin_PROGRAMS = rainmaker$(EXEEXT) rmxml$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -57,8 +57,10 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_rainmaker_OBJECTS = main.$(OBJEXT) rainmaker.$(OBJEXT)
 rainmaker_OBJECTS = $(am_rainmaker_OBJECTS)
-am__DEPENDENCIES_1 =
-rainmaker_DEPENDENCIES = $(am__DEPENDENCIES_1)
+rainmaker_LDADD = $(LDADD)
+am_rmxml_OBJECTS = rainmaker-xml.$(OBJEXT) rainmaker.$(OBJEXT)
+rmxml_OBJECTS = $(am_rmxml_OBJECTS)
+rmxml_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -72,8 +74,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(rainmaker_SOURCES)
-DIST_SOURCES = $(rainmaker_SOURCES)
+SOURCES = $(rainmaker_SOURCES) $(rmxml_SOURCES)
+DIST_SOURCES = $(rainmaker_SOURCES) $(rmxml_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -92,6 +94,7 @@ CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -111,7 +114,7 @@ LDFLAGS = @LDFLAGS@
 LIBGLIB_CFLAGS = @LIBGLIB_CFLAGS@
 LIBGLIB_LIBS = @LIBGLIB_LIBS@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBS@
+LIBS = @LIBSOUP_LIBS@
 LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
 LIBSOUP_LIBS = @LIBSOUP_LIBS@
 LIBTOOL = @LIBTOOL@
@@ -119,6 +122,7 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -135,6 +139,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -145,6 +151,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
@@ -175,9 +182,10 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+libxml2_CFLAGS = @libxml2_CFLAGS@
+libxml2_LIBS = @libxml2_LIBS@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -197,7 +205,7 @@ rainmaker_SOURCES = main.c      \
                     rainmaker.c \
                     rainmaker.h
 
-rainmaker_LDADD = $(LIBSOUP_LIBS)
+rmxml_SOURCES = rainmaker-xml.c rainmaker.c
 AM_CFLAGS = $(LIBSOUP_CFLAGS)
 AM_CPPFLAGS = $(LIBSOUP_CFLAGS)
 all: all-am
@@ -280,6 +288,9 @@ clean-binPROGRAMS:
 rainmaker$(EXEEXT): $(rainmaker_OBJECTS) $(rainmaker_DEPENDENCIES) 
 	@rm -f rainmaker$(EXEEXT)
 	$(LINK) $(rainmaker_OBJECTS) $(rainmaker_LDADD) $(LIBS)
+rmxml$(EXEEXT): $(rmxml_OBJECTS) $(rmxml_DEPENDENCIES) 
+	@rm -f rmxml$(EXEEXT)
+	$(LINK) $(rmxml_OBJECTS) $(rmxml_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -288,6 +299,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker.Po@am__quote@
 
 .c.o:

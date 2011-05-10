@@ -6,6 +6,8 @@
  * New BSD License. See COPYING for license details.
  */
 
+#include <libsoup/soup.h>
+
 #include "config.h"
 
 #ifndef _HAVE_RAINMAKER_H
