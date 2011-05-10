@@ -15,7 +15,7 @@
 
 typedef struct _rmScoreboard { 
     guint   requests;
-    guint   resp_codes[5];
+    guint   resp_codes[6];
     gdouble elapsed;
     GTimer *stopwatch;
 } rmScoreboard; 
@@ -30,7 +30,7 @@ void          rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src);
 void          rm_scoreboard_free(rmScoreboard *sb);
 rmClient*     rm_client_new();
 void          rm_client_free(rmClient *client);
-gboolean      rm_client_send_request(rmClient *client, rmRequest *request);
+guint         rm_client_send_request(rmClient *client, rmRequest *request);
 
 #define _HAVE_RAINMAKER_CLIENT_H
 #endif

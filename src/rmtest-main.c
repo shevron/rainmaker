@@ -15,6 +15,7 @@
 #include "rainmaker-client.h"
 
 static gchar* respcodes[] = {
+    "TCP ERROR",
     "Informational",
     "Success",
     "Redirection",
@@ -48,9 +49,9 @@ int main(int argc, char *argv[])
     printf("Totral requests: %u\n", score->requests);
     printf("Elapsed Time:    %lf\n", score->elapsed); 
     printf("Response Codes:\n");
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 6; i++) {
         if (score->resp_codes[i] > 0)
-            printf("  %uxx %-15s: %u\n", i + 1, respcodes[i], score->resp_codes[i]);
+            printf("  %uxx %-15s: %u\n", i, respcodes[i], score->resp_codes[i]);
     }
 
     rm_scenario_free(sc);

@@ -41,7 +41,7 @@ void rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src)
         target->requests += src->requests;
         target->elapsed  += src->elapsed;
 
-        for (i = 0; i < 5; i++) { 
+        for (i = 0; i < 6; i++) { 
             target->resp_codes[i] += src->resp_codes[i];
         }
     }
@@ -91,7 +91,7 @@ void rm_client_free(rmClient *client)
  *
  * Send a single request through the client, keeping score using the scoreboard
  */
-gboolean rm_client_send_request(rmClient *client, rmRequest *request)
+guint rm_client_send_request(rmClient *client, rmRequest *request)
 {
     SoupMessage *msg;
     guint        status;
@@ -110,12 +110,12 @@ gboolean rm_client_send_request(rmClient *client, rmRequest *request)
 
     // Count request and response code, add elapsed time
     client->scoreboard->requests++;
-    client->scoreboard->resp_codes[(status / 100) - 1]++;
+    client->scoreboard->resp_codes[(status / 100)]++;
     client->scoreboard->elapsed += g_timer_elapsed(client->scoreboard->stopwatch, NULL);
 
     g_object_unref((gpointer) msg);
 
-    return TRUE;
+    return status;
 }
 /* rm_client_send_request }}} */
 
