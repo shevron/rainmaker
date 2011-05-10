@@ -89,6 +89,7 @@ gboolean rm_client_send_request(rmClient *client, rmRequest *request)
     guint        status;
 
     msg = soup_message_new_from_uri(request->method, request->url);
+    soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
 
     // Start timer
     g_timer_start(client->scoreboard->stopwatch);
