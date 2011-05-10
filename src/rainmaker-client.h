@@ -8,8 +8,7 @@
 typedef struct _rmScoreboard { 
     guint   requests;
     guint   resp_codes[5];
-    gdouble elapsed_s;
-    gulong  elapsed_u;
+    gdouble elapsed;
     GTimer *stopwatch;
 } rmScoreboard; 
 

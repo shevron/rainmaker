@@ -8,7 +8,7 @@
  * Rainmaker request struct
  */
 typedef struct _rmRequest {
-    gchar              *method;
+    const gchar        *method;
     SoupURI            *url;
     SoupMessageHeaders *headers;
     gchar              *body;
@@ -16,7 +16,7 @@ typedef struct _rmRequest {
 } rmRequest;
 /* }}} */
 
-rmRequest*  rm_request_new(gchar *url, SoupURI *baseUrl);
+rmRequest*  rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl);
 void        rm_request_free(rmRequest *req);
 
 #define _HAVE_RAINMAKER_REQUEST_H

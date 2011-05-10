@@ -24,7 +24,7 @@ rmScenario* rm_scenario_new()
     rmScenario *scn;
 
     scn = g_malloc(sizeof(rmScenario));
-    scn->requests = g_slist_alloc();
+    scn->requests = NULL;
     scn->baseUrl  = NULL;
 
     scn->persistCookies  = FALSE;
@@ -61,7 +61,6 @@ void rm_scenario_add_request(rmScenario *scenario, rmRequest *request)
 {
     g_assert(scenario != NULL);
     g_assert(request != NULL);
-    g_assert(scenario->requests != NULL);
 
     scenario->requests = g_slist_append(scenario->requests, (gpointer) request);
 }

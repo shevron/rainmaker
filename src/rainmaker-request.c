@@ -3,11 +3,11 @@
 
 #include "rainmaker-request.h"
 
-/* {{{ rmRequest* rm_request_new(gchar *url, SoupURI *baseUrl) 
+/* {{{ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl) 
  * 
  * Create a new request struct with a defined URL
  */
-rmRequest* rm_request_new(gchar *url, SoupURI *baseUrl)
+rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl)
 {
     rmRequest *req;
 
@@ -19,9 +19,9 @@ rmRequest* rm_request_new(gchar *url, SoupURI *baseUrl)
         req->url = soup_uri_new_with_base(baseUrl, url);
     }
 
+    req->method     = method;
     req->headers    = soup_message_headers_new(SOUP_MESSAGE_HEADERS_REQUEST);
     req->body       = NULL;
-    req->method     = NULL;
     req->bodyLength = 0;
 
     return req;
