@@ -42,7 +42,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = rainmaker$(EXEEXT) rmxml$(EXEEXT)
+bin_PROGRAMS = rmtest$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -55,12 +55,10 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_rainmaker_OBJECTS = main.$(OBJEXT) rainmaker.$(OBJEXT)
-rainmaker_OBJECTS = $(am_rainmaker_OBJECTS)
-rainmaker_LDADD = $(LDADD)
-am_rmxml_OBJECTS = rainmaker-xml.$(OBJEXT) rainmaker.$(OBJEXT)
-rmxml_OBJECTS = $(am_rmxml_OBJECTS)
-rmxml_LDADD = $(LDADD)
+am_rmtest_OBJECTS = rmtest-main.$(OBJEXT) rainmaker-client.$(OBJEXT) \
+	rainmaker-request.$(OBJEXT) rainmaker-scenario.$(OBJEXT)
+rmtest_OBJECTS = $(am_rmtest_OBJECTS)
+rmtest_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -74,8 +72,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(rainmaker_SOURCES) $(rmxml_SOURCES)
-DIST_SOURCES = $(rainmaker_SOURCES) $(rmxml_SOURCES)
+SOURCES = $(rmtest_SOURCES)
+DIST_SOURCES = $(rmtest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -201,11 +199,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-rainmaker_SOURCES = main.c      \
-                    rainmaker.c \
-                    rainmaker.h
+rmtest_SOURCES = rmtest-main.c \
+                 rainmaker-client.c \
+		 rainmaker-request.c \
+		 rainmaker-scenario.c
 
-rmxml_SOURCES = rainmaker-xml.c rainmaker.c
 AM_CFLAGS = $(LIBSOUP_CFLAGS)
 AM_CPPFLAGS = $(LIBSOUP_CFLAGS)
 all: all-am
@@ -285,12 +283,9 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-rainmaker$(EXEEXT): $(rainmaker_OBJECTS) $(rainmaker_DEPENDENCIES) 
-	@rm -f rainmaker$(EXEEXT)
-	$(LINK) $(rainmaker_OBJECTS) $(rainmaker_LDADD) $(LIBS)
-rmxml$(EXEEXT): $(rmxml_OBJECTS) $(rmxml_DEPENDENCIES) 
-	@rm -f rmxml$(EXEEXT)
-	$(LINK) $(rmxml_OBJECTS) $(rmxml_LDADD) $(LIBS)
+rmtest$(EXEEXT): $(rmtest_OBJECTS) $(rmtest_DEPENDENCIES) 
+	@rm -f rmtest$(EXEEXT)
+	$(LINK) $(rmtest_OBJECTS) $(rmtest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -298,9 +293,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-xml.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-client.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-scenario.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rmtest-main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
