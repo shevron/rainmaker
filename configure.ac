@@ -10,7 +10,7 @@ dnl ---
 
 AC_PREREQ(2.61)
 AC_INIT([rainmaker], [0.1], [shahar@arr.gr])
-AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_SRCDIR([src/rainmaker-request.c])
 AC_CONFIG_HEADER([config.h])
 
 AM_INIT_AUTOMAKE([-Wall -Werror])

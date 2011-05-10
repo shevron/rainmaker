@@ -8,13 +8,12 @@
 
 # rainmaker Makefile.am
 
-bin_PROGRAMS = rainmaker rmxml
+bin_PROGRAMS = rmtest
 
-rainmaker_SOURCES = main.c      \
-                    rainmaker.c \
-                    rainmaker.h
-
-rmxml_SOURCES = rainmaker-xml.c rainmaker.c
+rmtest_SOURCES = rmtest-main.c \
+                 rainmaker-client.c \
+		 rainmaker-request.c \
+		 rainmaker-scenario.c
 
 LIBS = @LIBSOUP_LIBS@
 
