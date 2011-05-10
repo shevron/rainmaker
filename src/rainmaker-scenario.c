@@ -79,12 +79,20 @@ rmScoreboard* rm_scenario_run(rmScenario *scenario)
     rmClient     *client;
     GSList       *rlNode;
     rmScoreboard *sb;
+    guint         status;
 
     client = rm_client_new();
 
     for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) { 
         g_assert(rlNode->data != NULL);
-        rm_client_send_request(client, (rmRequest *) rlNode->data);
+        status = rm_client_send_request(client, (rmRequest *) rlNode->data);
+
+        if ((status < 100 && scenario->failOnTcpError) ||
+            (status >= 400 && scenario->failOnHttpError)) { 
+            
+            client->scoreboard->failed = TRUE;
+            break;
+        }
     }
 
     // Copy results into new scoreboard, before freeing client

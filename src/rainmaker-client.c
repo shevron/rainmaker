@@ -44,6 +44,8 @@ void rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src)
         for (i = 0; i < 6; i++) { 
             target->resp_codes[i] += src->resp_codes[i];
         }
+
+        target->failed = (target->failed || src->failed);
     }
 }
 /* rm_scoreboard_merge }}} */

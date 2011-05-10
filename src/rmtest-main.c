@@ -30,10 +30,11 @@ int main(int argc, char *argv[])
     rmScoreboard *score;
     GError       *err = NULL;
     gint          i;
+    gboolean      failed = FALSE;
 
     if (argc != 2) { 
         fprintf(stderr, "Usage: %s <scenario file>\n", argv[0]);
-        return 1;
+        return 100;
     }
 
     g_type_init();
@@ -41,9 +42,13 @@ int main(int argc, char *argv[])
     sc = rm_scenario_xml_read_file(argv[1], &err);
     if (! sc) goto exitwitherror;
 
-    printf("Running scenario...\n");
+    printf("Running scenario... ");
     score = rm_scenario_run(sc);
-    printf("Done!\n");
+    if (score->failed) { 
+        printf("TEST FAILED!\n");
+    } else {
+        printf("Done.\n");
+    }
 
     // Print out scoreboard
     printf("Totral requests: %u\n", score->requests);
@@ -54,17 +59,19 @@ int main(int argc, char *argv[])
             printf("  %uxx %-15s: %u\n", i, respcodes[i], score->resp_codes[i]);
     }
 
+    failed = score->failed;
+
     rm_scenario_free(sc);
     rm_scoreboard_free(score);
 
-    return 0;
+    return (failed ? 1 : 0);
 
 exitwitherror:
     if (err != NULL) { 
         fprintf(stderr, "ERROR: %s\n", err->message);
     }
 
-    return 2;
+    return 101;
 }
 
 /** 

@@ -14,10 +14,11 @@
 #ifndef _HAVE_RAINMAKER_CLIENT_H
 
 typedef struct _rmScoreboard { 
-    guint   requests;
-    guint   resp_codes[6];
-    gdouble elapsed;
-    GTimer *stopwatch;
+    guint     requests;
+    guint     resp_codes[6];
+    gdouble   elapsed;
+    GTimer   *stopwatch;
+    gboolean  failed;
 } rmScoreboard; 
 
 typedef struct _rmClient {
