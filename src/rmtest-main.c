@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "rainmaker-scenario.h"
+#include "rainmaker-scenario-xml.h"
 #include "rainmaker-request.h"
 #include "rainmaker-client.h"
 
@@ -29,22 +30,15 @@ int main(int argc, char *argv[])
     GError       *err = NULL;
     gint          i;
 
+    if (argc != 2) { 
+        fprintf(stderr, "Usage: %s <scenario file>\n", argv[0]);
+        return 1;
+    }
+
     g_type_init();
 
-    sc = rm_scenario_new();
-    sc->baseUrl = soup_uri_new("http://localhost/");
-
-    req = rm_request_new("GET", "/", sc->baseUrl, &err);
-    if (! req) goto exitwitherror;
-    rm_scenario_add_request(sc, req);
-
-    req = rm_request_new("GET", "/devcloud/", sc->baseUrl, &err);
-    if (! req) goto exitwitherror;
-    rm_scenario_add_request(sc, req);
-
-    req = rm_request_new("GET", "/devcloud/container/create", sc->baseUrl, &err);
-    if (! req) goto exitwitherror;
-    rm_scenario_add_request(sc, req);
+    sc = rm_scenario_xml_read_file(argv[1], &err);
+    if (! sc) goto exitwitherror;
 
     printf("Running scenario...\n");
     score = rm_scenario_run(sc);
@@ -65,12 +59,11 @@ int main(int argc, char *argv[])
     return 0;
 
 exitwitherror:
-    rm_scenario_free(sc);
     if (err != NULL) { 
         fprintf(stderr, "ERROR: %s\n", err->message);
     }
 
-    return 1;
+    return 2;
 }
 
 /** 

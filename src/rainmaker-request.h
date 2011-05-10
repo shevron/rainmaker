@@ -16,11 +16,13 @@
  * Rainmaker request struct
  */
 typedef struct _rmRequest {
-    const gchar        *method;
+    gchar              *method;
     SoupURI            *url;
     SoupMessageHeaders *headers;
     gchar              *body;
     gsize               bodyLength;
+    gboolean            freeBody;
+    gboolean            freeMethod;
 } rmRequest;
 /* }}} */
 
@@ -32,7 +34,7 @@ enum {
 };
 /* }}} */
 
-rmRequest*  rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error);
+rmRequest*  rm_request_new(gchar *method, gchar *url, SoupURI *baseUrl, GError **error);
 void        rm_request_free(rmRequest *req);
 
 #define _HAVE_RAINMAKER_REQUEST_H

@@ -13,7 +13,8 @@ bin_PROGRAMS = rmtest
 rmtest_SOURCES = rmtest-main.c \
                  rainmaker-client.c \
 		 rainmaker-request.c \
-		 rainmaker-scenario.c
+		 rainmaker-scenario.c \
+		 rainmaker-scenario-xml.c
 
 LIBS = @LIBSOUP_LIBS@
 
