@@ -18,19 +18,24 @@ int main(int argc, char *argv[])
     rmScenario   *sc;
     rmRequest    *req;
     rmScoreboard *score;
+    GError       *err = NULL;
     gint          i;
 
     g_type_init();
 
     sc = rm_scenario_new();
+    sc->baseUrl = soup_uri_new("http://localhost/");
 
-    req = rm_request_new("GET", "http://localhost/", sc->baseUrl);
+    req = rm_request_new("GET", "/", sc->baseUrl, &err);
+    if (! req) goto exitwitherror;
     rm_scenario_add_request(sc, req);
 
-    req = rm_request_new("GET", "http://localhost/devcloud", sc->baseUrl);
+    req = rm_request_new("GET", "/devcloud/", sc->baseUrl, &err);
+    if (! req) goto exitwitherror;
     rm_scenario_add_request(sc, req);
 
-    req = rm_request_new("GET", "http://localhost/devcloud/container/create", sc->baseUrl);
+    req = rm_request_new("GET", "/devcloud/container/create", sc->baseUrl, &err);
+    if (! req) goto exitwitherror;
     rm_scenario_add_request(sc, req);
 
     printf("Running scenario...\n");
@@ -46,7 +51,18 @@ int main(int argc, char *argv[])
             printf("  %uxx %-15s: %u\n", i + 1, respcodes[i], score->resp_codes[i]);
     }
 
+    rm_scenario_free(sc);
+    rm_scoreboard_free(score);
+
     return 0;
+
+exitwitherror:
+    rm_scenario_free(sc);
+    if (err != NULL) { 
+        fprintf(stderr, "ERROR: %s\n", err->message);
+    }
+
+    return 1;
 }
 
 /** 
