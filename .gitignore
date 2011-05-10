@@ -1,2 +1,5 @@
 autom4te.cache/
+src/*.o
+src/.deps
+Makefile
 .*.swp
