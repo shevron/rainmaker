@@ -1,3 +1,11 @@
+/**
+ * Rainmaker HTTP load testing tool
+ * Copyright (c) 2010-2011 Shahar Evron
+ *
+ * Rainmaker is free / open source software, available under the terms of the
+ * New BSD License. See COPYING for license details.
+ */
+
 #include <glib.h>
 #include <libsoup/soup.h>
 
