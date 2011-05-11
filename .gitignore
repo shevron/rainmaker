@@ -3,3 +3,6 @@ src/*.o
 src/.deps
 Makefile
 .*.swp
+.cproject
+.project
+.settings/
