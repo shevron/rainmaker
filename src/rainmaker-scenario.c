@@ -34,6 +34,7 @@ rmScenario* rm_scenario_new()
     scn = g_malloc(sizeof(rmScenario));
     scn->requests = NULL;
     scn->baseUrl  = NULL;
+    scn->logger   = NULL;
 
     scn->persistCookies  = FALSE;
     scn->failOnHttpError = TRUE;
@@ -74,6 +75,10 @@ void rm_scenario_add_request(rmScenario *scenario, rmRequest *request)
 }
 /* rm_scenario_add_request }}} */
 
+/* {{{ rmScoreboard* rm_scenario_run(rmScenario *scenario)
+ *
+ * Run scenario, returning the results in a scoreboard object
+ */
 rmScoreboard* rm_scenario_run(rmScenario *scenario)
 {
     rmClient     *client;
@@ -82,6 +87,10 @@ rmScoreboard* rm_scenario_run(rmScenario *scenario)
     guint         status;
 
     client = rm_client_new();
+
+    if (scenario->logger) { 
+        rm_client_set_logger(client, scenario->logger);
+    }
 
     for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) { 
         g_assert(rlNode->data != NULL);
@@ -103,6 +112,7 @@ rmScoreboard* rm_scenario_run(rmScenario *scenario)
 
     return sb;
 }
+/* rm_scenario_run }}} */
 
 /** 
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker

@@ -36,6 +36,19 @@ static gchar* respcodes[] = {
     "Server Error"
 };
 
+// Verbosity levels
+enum {
+    VERBOSITY_SILENT,
+    VERBOSITY_SUMMARY,
+    VERBOSITY_MINIMAL,
+    VERBOSITY_HEADERS,
+    VERBOSITY_FULL
+};
+
+/* {{{ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
+ *
+ * Parse commans line arguments
+ */
 static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
 {
     GOptionContext *ctx;
@@ -83,11 +96,33 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
         g_printerr("error: verbosity must be between 0 and 4\n");
         return FALSE;
     }
-
    
     return TRUE;
 }
+/* parse_args }}} */
 
+static void log_printer(SoupLogger *logger, SoupLoggerLogLevel level, 
+    char direction, const char *data, gpointer user_data)
+{
+    // Logging should be done to STDERR
+    g_printerr("%c %s\n", direction, data);
+}
+
+static SoupLogger* create_logger(cmdlineArgs *args)
+{
+    SoupLogger *logger;
+
+    static SoupLoggerLogLevel logLevels[] = {
+    	SOUP_LOGGER_LOG_MINIMAL,
+	    SOUP_LOGGER_LOG_HEADERS,
+	    SOUP_LOGGER_LOG_BODY
+    };
+      
+    logger = soup_logger_new(logLevels[args->verbosity - VERBOSITY_MINIMAL], -1);
+    soup_logger_set_printer(logger, log_printer, NULL, NULL);
+
+    return logger;
+}
 
 int main(int argc, char *argv[])
 {
@@ -108,6 +143,11 @@ int main(int argc, char *argv[])
     sc = rm_scenario_xml_read_file(options.scenarioFile, &err);
     if (! sc) goto exitwitherror;
 
+    // Set up logger
+    if (options.verbosity > VERBOSITY_SUMMARY) {
+        sc->logger = create_logger(&options);
+    }
+
     printf("Running scenario... ");
     score = rm_scenario_run(sc);
     if (score->failed) { 
@@ -126,7 +166,8 @@ int main(int argc, char *argv[])
     }
 
     failed = score->failed;
-
+    
+    if (sc->logger) g_object_unref(sc->logger);
     rm_scenario_free(sc);
     rm_scoreboard_free(score);
 

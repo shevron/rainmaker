@@ -77,6 +77,16 @@ rmClient* rm_client_new()
 }
 /* rm_client_new }}} */
 
+/* {{{ void rm_client_set_logger(rmClient *client, SoupLogger *logger)
+ *
+ * Set a logger for this client
+ */
+void rm_client_set_logger(rmClient *client, SoupLogger *logger)
+{
+    soup_session_add_feature(client->session, (SoupSessionFeature *) logger);
+}
+/* rm_client_set_logger }}} */
+
 /* {{{ void rm_client_free(rmClient *client)
  *
  * Free an rmClient struct and all related resources

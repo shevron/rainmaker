@@ -19,11 +19,12 @@
  * Scenario struct
  */
 typedef struct _rmScenario { 
-    GSList   *requests;
-    SoupURI  *baseUrl;
-    gboolean  persistCookies;
-    gboolean  failOnHttpError;
-    gboolean  failOnTcpError;
+    GSList     *requests;
+    SoupURI    *baseUrl;
+    SoupLogger *logger;
+    gboolean    persistCookies;
+    gboolean    failOnHttpError;
+    gboolean    failOnTcpError;
 } rmScenario;
 /* }}} */
 
