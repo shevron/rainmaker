@@ -8,12 +8,25 @@
 
 #include <glib.h>
 #include <stdio.h>
+#include <string.h>
+
+#include "config.h"
 
 #include "rainmaker-scenario.h"
 #include "rainmaker-scenario-xml.h"
 #include "rainmaker-request.h"
 #include "rainmaker-client.h"
 
+// Options set through command line args
+typedef struct _cmdlineArgs {
+    guint     clients;
+    guint     repeat;
+    gboolean  keepcookies; 
+    guint     verbosity;
+    gchar    *scenarioFile; 
+} cmdlineArgs; 
+
+// Text for different HTTP response code classes
 static gchar* respcodes[] = {
     "TCP ERROR",
     "Informational",
@@ -23,8 +36,62 @@ static gchar* respcodes[] = {
     "Server Error"
 };
 
+static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
+{
+    GOptionContext *ctx;
+    GError         *error = NULL;
+    gboolean        res;
+
+    bzero(options, sizeof(cmdlineArgs));
+
+    GOptionEntry    arguments[] = {
+        {"clients", 'c', 0, G_OPTION_ARG_INT, &options->clients,
+            "number of concurrent clients to run", NULL},
+        {"repeat", 'r', 0, G_OPTION_ARG_INT, &options->repeat,
+            "number of times to repeat entire scenario", NULL},
+        {"keep-cookies", 'C', 0, G_OPTION_ARG_NONE, &options->keepcookies,
+            "keep cookies between scenario repeats (per client)", NULL},
+        {"verbose", 'v', 0, G_OPTION_ARG_INT, &options->verbosity, 
+            "produce verbose output", "level (0-4)"},
+        { NULL }
+    };
+
+    ctx = g_option_context_new("<scenario file>");
+    g_option_context_set_summary(ctx, 
+        PACKAGE_NAME " HTTP load testing tool, version " PACKAGE_VERSION);
+    g_option_context_set_help_enabled(ctx, TRUE);
+    g_option_context_add_main_entries(ctx, arguments, NULL);
+
+    // Parse options
+    res = g_option_context_parse(ctx, &argc, &argv, &error);
+    g_option_context_free(ctx);
+
+    if (! res) {
+        g_printerr("failed parsing arguments: %s\n", error->message);
+        return FALSE;
+    }
+
+    // Get remaining argument
+    if (argc != 2) {
+        g_printerr("error: no scenario file specified, run with --help for help\n");
+        return FALSE;
+    }
+    options->scenarioFile = argv[1];
+ 
+    // Check verbosity value
+    if (options->verbosity < 0 || options->verbosity > 4) { 
+        g_printerr("error: verbosity must be between 0 and 4\n");
+        return FALSE;
+    }
+
+   
+    return TRUE;
+}
+
+
 int main(int argc, char *argv[])
 {
+    cmdlineArgs   options;
     rmScenario   *sc;
     rmRequest    *req;
     rmScoreboard *score;
@@ -32,14 +99,13 @@ int main(int argc, char *argv[])
     gint          i;
     gboolean      failed = FALSE;
 
-    if (argc != 2) { 
-        fprintf(stderr, "Usage: %s <scenario file>\n", argv[0]);
-        return 100;
-    }
-
     g_type_init();
 
-    sc = rm_scenario_xml_read_file(argv[1], &err);
+    if (! parse_args(argc, argv, &options)) { 
+        return 1;
+    }
+
+    sc = rm_scenario_xml_read_file(options.scenarioFile, &err);
     if (! sc) goto exitwitherror;
 
     printf("Running scenario... ");
@@ -64,14 +130,14 @@ int main(int argc, char *argv[])
     rm_scenario_free(sc);
     rm_scoreboard_free(score);
 
-    return (failed ? 1 : 0);
+    return (failed ? 100 : 0);
 
 exitwitherror:
     if (err != NULL) { 
         fprintf(stderr, "ERROR: %s\n", err->message);
     }
 
-    return 101;
+    return 2;
 }
 
 /** 
