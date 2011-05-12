@@ -3,8 +3,6 @@ Rainmaker 1.0 TODO
 
 HTTP Feature Support
 --------------------
-- Cookie persistance (per scenario)
-- Custom headers
 - POST / PUT raw data submission
 - Form data submission
   - POST urlencoded vs. multiplart
@@ -13,7 +11,7 @@ HTTP Feature Support
 
 Testing and Analysis
 --------------------
-- Logging and debugging features
+- Improve logging (log only errors, remove Soup messages)
 - Scriptability - SpiderMonkey integration
 - Fail on HTTP redirect
 - "Expected Response" per request
@@ -26,4 +24,3 @@ Concurrency
 -----------
 - Single machine concurrency (threads)
 - Multi-machine concurrency (master / slaves) 
-

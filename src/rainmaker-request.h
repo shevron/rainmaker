@@ -28,6 +28,7 @@ typedef struct _rmRequest {
     gchar    *body;
     gsize     bodyLength;
     gboolean  freeBody;
+    guint     repeat;
 } rmRequest;
 /* }}} */
 

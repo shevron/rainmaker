@@ -49,11 +49,12 @@ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GEr
 
     req = g_malloc(sizeof(rmRequest));
 
-    req->headers    = NULL;
     req->method     = g_quark_from_string(method);
+    req->headers    = NULL;
     req->body       = NULL;
     req->bodyLength = 0;
     req->freeBody   = FALSE;
+    req->repeat     = 1;
 
     if (baseUrl == NULL) {
         req->url = soup_uri_new(url);

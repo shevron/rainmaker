@@ -125,6 +125,19 @@ static rmRequest* new_request_from_xml_node(xmlNode *node, rmRequest *baseReques
         return FALSE;
     }
 
+    // Set the repeat count for the request
+    if ((attr = xmlGetProp(node, "repeat")))  {
+        req->repeat = atoi((const char *) attr);
+        xmlFree(attr);
+        if (req->repeat < 1) {
+            // We got no method, and no fallback
+            g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "request repeat count must be larger than 0");
+            rm_request_free(req);
+            return FALSE;
+        }
+    }
+
     // Add base request headers and then read any request-specific headers
     g_slist_foreach(baseRequest->headers, (GFunc) rm_header_copy_to_request, (gpointer) req);
     if (! read_request_headers_xml(node, req, error)) {

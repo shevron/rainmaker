@@ -14,7 +14,7 @@
 #include "rainmaker-client.h"
 
 /* {{{ static void rm_scenario_free_request(gpointer reqptr, gpointer user_data);
- * 
+ *
  * Wrapper around rm_request_free that can be used by g_slist_foreach()
  */
 static void rm_scenario_free_requests(gpointer reqptr, gpointer user_data)
@@ -24,7 +24,7 @@ static void rm_scenario_free_requests(gpointer reqptr, gpointer user_data)
 /* rm_scenario_free_request }}} */
 
 /* {{{ rmScenario* rm_scenario_new()
- * 
+ *
  * Allocate memory for a new scenario object
  */
 rmScenario* rm_scenario_new()
@@ -77,41 +77,52 @@ void rm_scenario_add_request(rmScenario *scenario, rmRequest *request)
  */
 rmScoreboard* rm_scenario_run(rmScenario *scenario)
 {
-    rmClient     *client;
-    GSList       *rlNode;
-    rmScoreboard *sb;
-    guint         status;
+    rmClient      *client;
+    GSList        *rlNode;
+    rmScoreboard  *sb;
+    guint          status, i;
+    SoupCookieJar *cookieJar = NULL;
 
     client = rm_client_new();
 
-    if (scenario->logger) { 
+    if (scenario->logger) {
         rm_client_set_logger(client, scenario->logger);
+    }
+
+    // Enable cookie persistence if needed
+    if (scenario->persistCookies) {
+        cookieJar = soup_cookie_jar_new();
+        soup_session_add_feature(client->session, (SoupSessionFeature *) cookieJar);
     }
 
     for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) {
         g_assert(rlNode->data != NULL);
+        g_assert(((rmRequest *) rlNode->data)->repeat >= 1);
 
-        status = rm_client_send_request(client, (rmRequest *) rlNode->data);
+        for (i = 0; i < ((rmRequest *) rlNode->data)->repeat; i++) {
+            status = rm_client_send_request(client, (rmRequest *) rlNode->data);
 
-        if ((status < 100 && scenario->failOnTcpError) ||
-            (status >= 400 && scenario->failOnHttpError)) { 
-            
-            client->scoreboard->failed = TRUE;
-            break;
+            if ((status < 100 && scenario->failOnTcpError) ||
+                (status >= 400 && scenario->failOnHttpError)) {
+
+                client->scoreboard->failed = TRUE;
+                break;
+            }
         }
     }
 
     // Copy results into new scoreboard, before freeing client
     sb = rm_scoreboard_new();
-    rm_scoreboard_merge(sb, client->scoreboard); 
+    rm_scoreboard_merge(sb, client->scoreboard);
 
+    if (cookieJar) g_object_unref(cookieJar);
     rm_client_free(client);
 
     return sb;
 }
 /* rm_scenario_run }}} */
 
-/** 
+/**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */
 
