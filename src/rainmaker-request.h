@@ -22,17 +22,16 @@ typedef struct _rmHeader {
  * Rainmaker request struct
  */
 typedef struct _rmRequest {
-    gchar    *method;
+    GQuark    method;
     SoupURI  *url;
     GSList   *headers;
     gchar    *body;
     gsize     bodyLength;
     gboolean  freeBody;
-    gboolean  freeMethod;
 } rmRequest;
 /* }}} */
 
-/* {{{ Error quark and codes */
+/* {{{ Error Quark and codes */
 #define RM_ERROR_REQ g_quark_from_static_string("rainmaker-request-error")
 
 enum {
@@ -43,7 +42,7 @@ enum {
 rmHeader*  rm_header_new(const gchar *name, const gchar *value);
 void       rm_header_copy_to_request(rmHeader *header, rmRequest *dest);
 void       rm_header_free(rmHeader *header);
-rmRequest* rm_request_new(gchar *method, gchar *url, SoupURI *baseUrl, GError **error);
+rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error);
 void       rm_request_add_header(rmRequest *request, const gchar *name, const gchar *value, gboolean reaplce);
 void       rm_request_free(rmRequest *req);
 

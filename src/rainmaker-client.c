@@ -17,7 +17,7 @@
  */
 rmScoreboard *rm_scoreboard_new()
 {
-    rmScoreboard *sb; 
+    rmScoreboard *sb;
 
     sb = g_malloc0(sizeof(rmScoreboard));
     sb->stopwatch = g_timer_new();
@@ -37,11 +37,11 @@ void rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src)
     g_assert(target != NULL);
     g_assert(src != NULL);
 
-    if (src->requests) { 
+    if (src->requests) {
         target->requests += src->requests;
         target->elapsed  += src->elapsed;
 
-        for (i = 0; i < 6; i++) { 
+        for (i = 0; i < 6; i++) {
             target->resp_codes[i] += src->resp_codes[i];
         }
 
@@ -63,7 +63,7 @@ void rm_scoreboard_free(rmScoreboard *sb)
 
 /* {{{ rmClient *rm_client_new()
  *
- * Create a new rmClient struct 
+ * Create a new rmClient struct
  */
 rmClient* rm_client_new()
 {
@@ -117,7 +117,7 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
     SoupMessage *msg;
     guint        status;
 
-    msg = soup_message_new_from_uri(request->method, request->url);
+    msg = soup_message_new_from_uri(g_quark_to_string(request->method), request->url);
     soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
 
     // Add headers
@@ -143,6 +143,6 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
 }
 /* rm_client_send_request }}} */
 
-/** 
+/**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */

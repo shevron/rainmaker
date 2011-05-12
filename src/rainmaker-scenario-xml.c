@@ -84,39 +84,46 @@ gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **er
 static rmRequest* new_request_from_xml_node(xmlNode *node, rmRequest *baseRequest, GError **error)
 {
     rmRequest *req;
-    xmlChar   *method, *url;
+    xmlChar   *attr;
+    gboolean   free_method = FALSE;
 
     g_assert(node->type == XML_ELEMENT_NODE);
 
-    if ((method = xmlGetProp(node, "method")) == NULL) {
-        // Method property is missing
-        if (baseRequest->method == NULL) {
-            g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
-                "required property 'method' is missing for request");
-            return NULL;
-        } else {
-            // Set request method from the default request method
-            method = g_intern_string(baseRequest->method);
-        }
-    }
-
-    // Set the request URI
-    if ((url = xmlGetProp(node, "url")) == NULL) {
-        // URI property is missing
+    if ((attr = xmlGetProp(node, "url")) == NULL) {
+        // URI property is missing, check base request
         if (baseRequest->url == NULL) {
+            // No base URL defined
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "required property 'uri' is missing for request");
-            xmlFree(method);
             return NULL;
+
         } else {
             // Set request URL to blank string == base URL
-            url = xmlStrdup("");
+            attr = xmlStrdup("");
         }
     }
 
-    // Create request object and set values
-    req = rm_request_new(method, url, baseRequest->url, error);
-    xmlFree(url);
+    // Create the request, we will set the method later
+    req = rm_request_new(NULL, attr, baseRequest->url, error);
+    xmlFree(attr);
+
+    // Set the request method
+    if ((attr = xmlGetProp(node, "method"))) {
+        // Method defined for this request, use it
+        req->method = g_quark_from_string(attr);
+        xmlFree(attr);
+
+    } else if (baseRequest->method) {
+        // Method not defined but we have method from the baseRequest
+        req->method = baseRequest->method;
+
+    } else {
+        // We got no method, and no fallback
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+            "required property 'method' is missing for request");
+        rm_request_free(req);
+        return FALSE;
+    }
 
     // Add base request headers and then read any request-specific headers
     g_slist_foreach(baseRequest->headers, (GFunc) rm_header_copy_to_request, (gpointer) req);
@@ -151,8 +158,7 @@ static gboolean read_base_request_xml(xmlNode *node, rmRequest *baseRequest, GEr
     // Read base method
     prop = xmlGetProp(node, "method");
     if (prop != NULL) {
-        baseRequest->method = g_strdup(prop);
-        baseRequest->freeMethod = TRUE;
+        baseRequest->method = g_quark_from_string(prop);
         xmlFree(prop);
     }
 

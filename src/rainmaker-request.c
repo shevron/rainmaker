@@ -43,18 +43,17 @@ void rm_request_add_header(rmRequest *request, const gchar *name, const gchar *v
  *
  * Create a new request struct with a defined URL
  */
-rmRequest* rm_request_new(gchar *method, gchar *url, SoupURI *baseUrl, GError **error)
+rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error)
 {
     rmRequest *req;
 
     req = g_malloc(sizeof(rmRequest));
 
     req->headers    = NULL;
-    req->method     = method;
+    req->method     = g_quark_from_string(method);
     req->body       = NULL;
     req->bodyLength = 0;
     req->freeBody   = FALSE;
-    req->freeMethod = FALSE;
 
     if (baseUrl == NULL) {
         req->url = soup_uri_new(url);
@@ -89,9 +88,6 @@ void rm_request_free(rmRequest *req)
 
     if (req->freeBody && req->body != NULL)
         g_free(req->body);
-
-    if (req->freeMethod && req->method != NULL)
-        g_free(req->method);
 
     g_free(req);
 }
