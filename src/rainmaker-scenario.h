@@ -20,7 +20,6 @@
  */
 typedef struct _rmScenario { 
     GSList     *requests;
-    SoupURI    *baseUrl;
     SoupLogger *logger;
     gboolean    persistCookies;
     gboolean    failOnHttpError;

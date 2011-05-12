@@ -99,6 +99,15 @@ void rm_client_free(rmClient *client)
 }
 /* rm_client_free }}} */
 
+static void add_header_to_message(rmHeader *header, SoupMessage *msg)
+{
+    if (header->replace) {
+        soup_message_headers_replace(msg->request_headers, header->name, header->value);
+    } else {
+        soup_message_headers_append(msg->request_headers, header->name, header->value);
+    }
+}
+
 /* {{{ gboolean rm_client_send_request(rmClient *client, rmRequest *request)
  *
  * Send a single request through the client, keeping score using the scoreboard
@@ -110,6 +119,9 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
 
     msg = soup_message_new_from_uri(request->method, request->url);
     soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
+
+    // Add headers
+    g_slist_foreach(request->headers, (GFunc) add_header_to_message, (gpointer) msg);
 
     // Start timer
     g_timer_start(client->scoreboard->stopwatch);

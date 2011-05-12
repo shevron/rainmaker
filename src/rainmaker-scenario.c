@@ -33,7 +33,6 @@ rmScenario* rm_scenario_new()
 
     scn = g_malloc(sizeof(rmScenario));
     scn->requests = NULL;
-    scn->baseUrl  = NULL;
     scn->logger   = NULL;
 
     scn->persistCookies  = FALSE;
@@ -54,9 +53,6 @@ void rm_scenario_free(rmScenario *scenario)
     // Free all requests
     g_slist_foreach(scenario->requests, (GFunc) rm_scenario_free_requests, NULL);
     g_slist_free(scenario->requests);
-
-    if (scenario->baseUrl != NULL)
-        soup_uri_free(scenario->baseUrl);
 
     g_free(scenario);
 }
@@ -92,8 +88,9 @@ rmScoreboard* rm_scenario_run(rmScenario *scenario)
         rm_client_set_logger(client, scenario->logger);
     }
 
-    for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) { 
+    for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) {
         g_assert(rlNode->data != NULL);
+
         status = rm_client_send_request(client, (rmRequest *) rlNode->data);
 
         if ((status < 100 && scenario->failOnTcpError) ||

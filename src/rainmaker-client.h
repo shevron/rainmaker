@@ -30,7 +30,7 @@ rmScoreboard *rm_scoreboard_new();
 void          rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src);
 void          rm_scoreboard_free(rmScoreboard *sb);
 rmClient*     rm_client_new();
-void          rm_client_set_logger(rmClient *client, SoupLogger *logger)
+void          rm_client_set_logger(rmClient *client, SoupLogger *logger);
 void          rm_client_free(rmClient *client);
 guint         rm_client_send_request(rmClient *client, rmRequest *request);
 

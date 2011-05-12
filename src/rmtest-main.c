@@ -26,16 +26,6 @@ typedef struct _cmdlineArgs {
     gchar    *scenarioFile; 
 } cmdlineArgs; 
 
-// Text for different HTTP response code classes
-static gchar* respcodes[] = {
-    "TCP ERROR",
-    "Informational",
-    "Success",
-    "Redirection",
-    "Client Error",
-    "Server Error"
-};
-
 // Verbosity levels
 enum {
     VERBOSITY_SILENT,
@@ -133,6 +123,16 @@ int main(int argc, char *argv[])
     GError       *err = NULL;
     gint          i;
     gboolean      failed = FALSE;
+
+    // Text for different HTTP response code classes
+    static gchar* respcodes[] = {
+        "TCP ERROR",
+        "Informational",
+        "Success",
+        "Redirection",
+        "Client Error",
+        "Server Error"
+    };
 
     g_type_init();
 
