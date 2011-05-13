@@ -16,9 +16,10 @@
 #include "rainmaker-scenario.h"
 #include "rainmaker-scenario-xml.h"
 
-#define XMLATTR_TO_BOOLEAN(v) (xmlStrncasecmp(v, "yes", 4) == 0 || xmlStrncasecmp(v, "true", 5) == 0)
+#define XML_ATTR_TO_BOOLEAN(v) (xmlStrncasecmp(v, BAD_CAST "yes", 4) == 0 || xmlStrncasecmp(v, BAD_CAST "true", 5) == 0)
+#define XML_IF_NODE_NAME(nd, nm) if (xmlStrcmp(nd->name, BAD_CAST nm) == 0)
 
-gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **error)
+static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **error)
 {
     xmlXPathContextPtr  xpathCtx;
     xmlXPathObjectPtr   xpath;
@@ -27,7 +28,7 @@ gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **er
     gboolean            replace;
     guint               i;
 
-    const xmlChar *xpathExpr =  "headers/header";
+    const xmlChar *xpathExpr = BAD_CAST "headers/header";
 
     g_assert(node->type == XML_ELEMENT_NODE);
 
@@ -52,15 +53,15 @@ gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **er
     for (i = 0; i < nodes->nodeNr; i++) {
         g_assert(nodes->nodeTab[i]);
 
-        attr = xmlGetProp(nodes->nodeTab[i], "replace");
+        attr = xmlGetProp(nodes->nodeTab[i], BAD_CAST "replace");
         if (attr != NULL) {
-            replace = XMLATTR_TO_BOOLEAN(attr);
+            replace = XML_ATTR_TO_BOOLEAN(attr);
             xmlFree(attr);
         } else {
             replace = FALSE;
         }
 
-        attr = xmlGetProp(nodes->nodeTab[i], "name");
+        attr = xmlGetProp(nodes->nodeTab[i], BAD_CAST "name");
         if (attr == NULL) {
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "missing required attribute 'name' on header XML element in line %hu", nodes->nodeTab[i]->line);
@@ -70,7 +71,7 @@ gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **er
         }
 
         value = xmlNodeListGetString(node->doc, nodes->nodeTab[i]->children, 1);
-        rm_request_add_header(request, attr, value, replace);
+        rm_request_add_header(request, (const gchar *) attr, (const gchar *) value, replace);
         xmlFree(attr);
         xmlFree(value);
     }
@@ -81,36 +82,46 @@ gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **er
     return TRUE;
 }
 
+gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, GError **error)
+{
+    return TRUE;
+}
+
+gboolean read_request_body_raw_data(xmlNode *node, rmRequest *request, GError **error)
+{
+    return TRUE;
+}
+
 static rmRequest* new_request_from_xml_node(xmlNode *node, rmRequest *baseRequest, GError **error)
 {
     rmRequest *req;
     xmlChar   *attr;
-    gboolean   free_method = FALSE;
+    xmlNode   *child;
 
     g_assert(node->type == XML_ELEMENT_NODE);
 
-    if ((attr = xmlGetProp(node, "url")) == NULL) {
+    if ((attr = xmlGetProp(node, BAD_CAST "url")) == NULL) {
         // URI property is missing, check base request
         if (baseRequest->url == NULL) {
             // No base URL defined
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
-                "required property 'uri' is missing for request");
+                "required property 'url' is missing for request");
             return NULL;
 
         } else {
             // Set request URL to blank string == base URL
-            attr = xmlStrdup("");
+            attr = xmlStrdup(BAD_CAST "");
         }
     }
 
     // Create the request, we will set the method later
-    req = rm_request_new(NULL, attr, baseRequest->url, error);
+    req = rm_request_new(NULL, (gchar *) attr, baseRequest->url, error);
     xmlFree(attr);
 
     // Set the request method
-    if ((attr = xmlGetProp(node, "method"))) {
+    if ((attr = xmlGetProp(node, BAD_CAST "method"))) {
         // Method defined for this request, use it
-        req->method = g_quark_from_string(attr);
+        req->method = g_quark_from_string((gchar *) attr);
         xmlFree(attr);
 
     } else if (baseRequest->method) {
@@ -122,11 +133,11 @@ static rmRequest* new_request_from_xml_node(xmlNode *node, rmRequest *baseReques
         g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
             "required property 'method' is missing for request");
         rm_request_free(req);
-        return FALSE;
+        return NULL;
     }
 
     // Set the repeat count for the request
-    if ((attr = xmlGetProp(node, "repeat")))  {
+    if ((attr = xmlGetProp(node, BAD_CAST "repeat")))  {
         req->repeat = atoi((const char *) attr);
         xmlFree(attr);
         if (req->repeat < 1) {
@@ -134,15 +145,42 @@ static rmRequest* new_request_from_xml_node(xmlNode *node, rmRequest *baseReques
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "request repeat count must be larger than 0");
             rm_request_free(req);
-            return FALSE;
+            return NULL;
         }
+    }
+
+    // Iterate over child nodes to handle them
+    for (child = node->children; child; child = child->next) {
+        if (child->type == XML_ELEMENT_NODE) {
+            XML_IF_NODE_NAME(child, "rawData") {
+                // Read the raw request body
+                if (! read_request_body_raw_data(child, req, error))
+                    break;
+
+            } else XML_IF_NODE_NAME(child, "formData") {
+                // Read a script element
+                if (! read_request_body_form_data(child, req, error))
+                    break;
+
+            } else XML_IF_NODE_NAME(child, "headers") {
+                // Headers are read later using XPath (FIXME?)
+
+            } else {
+                g_printerr("WARNING: unrecognized XML element '%s'\n", child->name);
+            }
+        }
+    }
+
+    if (*error != NULL) {
+        rm_request_free(req);
+        return NULL;
     }
 
     // Add base request headers and then read any request-specific headers
     g_slist_foreach(baseRequest->headers, (GFunc) rm_header_copy_to_request, (gpointer) req);
     if (! read_request_headers_xml(node, req, error)) {
         rm_request_free(req);
-        return FALSE;
+        return NULL;
     }
 
     return req;
@@ -169,16 +207,16 @@ static gboolean read_base_request_xml(xmlNode *node, rmRequest *baseRequest, GEr
     g_assert(node->type == XML_ELEMENT_NODE);
 
     // Read base method
-    prop = xmlGetProp(node, "method");
+    prop = xmlGetProp(node, BAD_CAST "method");
     if (prop != NULL) {
-        baseRequest->method = g_quark_from_string(prop);
+        baseRequest->method = g_quark_from_string((gchar *) prop);
         xmlFree(prop);
     }
 
     // Read base URL
-    prop = xmlGetProp(node, "url");
+    prop = xmlGetProp(node, BAD_CAST "url");
     if (prop != NULL) {
-        baseRequest->url = soup_uri_new(prop);
+        baseRequest->url = soup_uri_new((const gchar *) prop);
         if (! SOUP_URI_VALID_FOR_HTTP(baseRequest->url)) {
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "Provided base URL '%s' is not a valid, full HTTP URL", prop);
@@ -202,7 +240,6 @@ static gboolean read_script_xml(xmlNode *node, rmScenario *scenario, GError **er
     return TRUE;
 }
 
-
 static gboolean read_options_xml(xmlNode *node, rmScenario *scenario, GError **error)
 {
     xmlNode *opt;
@@ -213,20 +250,20 @@ static gboolean read_options_xml(xmlNode *node, rmScenario *scenario, GError **e
     for (opt = node->children; opt; opt = opt->next) {
         if (opt->type != XML_ELEMENT_NODE) continue;
 
-        if (xmlStrcmp(opt->name, "option") != 0) {
+        if (xmlStrcmp(opt->name, BAD_CAST "option") != 0) {
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "Unexpected node '%s', expecting 'option'", opt->name);
 
             return FALSE;
         }
 
-        if ((attr = xmlGetProp(opt, "name")) == NULL) {
+        if ((attr = xmlGetProp(opt, BAD_CAST "name")) == NULL) {
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "Missing required attribute 'name' in 'option' element");
             return FALSE;
         }
 
-        if ((value = xmlGetProp(opt, "value")) == NULL) {
+        if ((value = xmlGetProp(opt, BAD_CAST "value")) == NULL) {
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
                 "Missing required attribute 'value' in 'option' element");
             xmlFree(attr);
@@ -234,14 +271,14 @@ static gboolean read_options_xml(xmlNode *node, rmScenario *scenario, GError **e
         }
 
         // What option are we setting?
-        if (xmlStrcmp(attr, "persistCookies") == 0) {
-            scenario->persistCookies = XMLATTR_TO_BOOLEAN(value);
+        if (xmlStrcmp(attr, BAD_CAST "persistCookies") == 0) {
+            scenario->persistCookies = XML_ATTR_TO_BOOLEAN(value);
 
-        } else if (xmlStrcmp(attr, "failOnHttpError") == 0) {
-            scenario->failOnHttpError = XMLATTR_TO_BOOLEAN(value);
+        } else if (xmlStrcmp(attr, BAD_CAST "failOnHttpError") == 0) {
+            scenario->failOnHttpError = XML_ATTR_TO_BOOLEAN(value);
 
-        } else if (xmlStrcmp(attr, "failOnTcpError") == 0) {
-            scenario->failOnTcpError = XMLATTR_TO_BOOLEAN(value);
+        } else if (xmlStrcmp(attr, BAD_CAST "failOnTcpError") == 0) {
+            scenario->failOnTcpError = XML_ATTR_TO_BOOLEAN(value);
 
         } else {
             // Unknown option
@@ -287,7 +324,7 @@ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
     xmlFreeParserCtxt(xmlCtx);
 
     root_node = xmlDocGetRootElement(xmlDoc);
-    if (root_node == NULL || (strcmp(root_node->name, "testScenario") != 0)) {
+    if (root_node == NULL || (xmlStrcmp(root_node->name, BAD_CAST "testScenario") != 0)) {
         g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
             "unexpected XML root element: '%s', expecting '%s'",
             root_node->name,
@@ -297,26 +334,24 @@ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
         scenario = rm_scenario_new();
         baseRequest = g_malloc0(sizeof(rmRequest));
 
-#define IF_NODE_NAME(n) if (strcmp(cur_node->name, n) == 0)
-
         for (cur_node = root_node->children; cur_node; cur_node = cur_node->next) {
             if (cur_node->type == XML_ELEMENT_NODE) {
-                IF_NODE_NAME("request") {
+                XML_IF_NODE_NAME(cur_node, "request") {
                     // Read a request object
                     if (! read_request_xml_add_req(cur_node, scenario, baseRequest, error))
                         break;
 
-                } else IF_NODE_NAME("script") {
+                } else XML_IF_NODE_NAME(cur_node, "script") {
                     // Read a script element
                     if (! read_script_xml(cur_node, scenario, error))
                         break;
 
-                } else IF_NODE_NAME("options") {
+                } else XML_IF_NODE_NAME(cur_node, "options") {
                     // Read the 'options' section
                     if (! read_options_xml(cur_node, scenario, error))
                         break;
 
-                } else IF_NODE_NAME("baseRequest") {
+                } else XML_IF_NODE_NAME(cur_node, "baseRequest") {
                     // Read the 'defaultRequest' section
                     if (! read_base_request_xml(cur_node, baseRequest, error))
                         break;
