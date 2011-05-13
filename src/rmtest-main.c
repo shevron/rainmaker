@@ -21,10 +21,10 @@
 typedef struct _cmdlineArgs {
     guint     clients;
     guint     repeat;
-    gboolean  keepcookies; 
+    gboolean  keepcookies;
     guint     verbosity;
-    gchar    *scenarioFile; 
-} cmdlineArgs; 
+    gchar    *scenarioFile;
+} cmdlineArgs;
 
 // Verbosity levels
 enum {
@@ -54,13 +54,13 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
             "number of times to repeat entire scenario", NULL},
         {"keep-cookies", 'C', 0, G_OPTION_ARG_NONE, &options->keepcookies,
             "keep cookies between scenario repeats (per client)", NULL},
-        {"verbose", 'v', 0, G_OPTION_ARG_INT, &options->verbosity, 
+        {"verbose", 'v', 0, G_OPTION_ARG_INT, &options->verbosity,
             "produce verbose output", "level (0-4)"},
         { NULL }
     };
 
     ctx = g_option_context_new("<scenario file>");
-    g_option_context_set_summary(ctx, 
+    g_option_context_set_summary(ctx,
         PACKAGE_NAME " HTTP load testing tool, version " PACKAGE_VERSION);
     g_option_context_set_help_enabled(ctx, TRUE);
     g_option_context_add_main_entries(ctx, arguments, NULL);
@@ -80,18 +80,18 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
         return FALSE;
     }
     options->scenarioFile = argv[1];
- 
+
     // Check verbosity value
-    if (options->verbosity < 0 || options->verbosity > 4) { 
+    if (options->verbosity < 0 || options->verbosity > 4) {
         g_printerr("error: verbosity must be between 0 and 4\n");
         return FALSE;
     }
-   
+
     return TRUE;
 }
 /* parse_args }}} */
 
-static void log_printer(SoupLogger *logger, SoupLoggerLogLevel level, 
+static void log_printer(SoupLogger *logger, SoupLoggerLogLevel level,
     char direction, const char *data, gpointer user_data)
 {
     // Logging should be done to STDERR
@@ -107,7 +107,7 @@ static SoupLogger* create_logger(cmdlineArgs *args)
 	    SOUP_LOGGER_LOG_HEADERS,
 	    SOUP_LOGGER_LOG_BODY
     };
-      
+
     logger = soup_logger_new(logLevels[args->verbosity - VERBOSITY_MINIMAL], -1);
     soup_logger_set_printer(logger, log_printer, NULL, NULL);
 
@@ -118,7 +118,6 @@ int main(int argc, char *argv[])
 {
     cmdlineArgs   options;
     rmScenario   *sc;
-    rmRequest    *req;
     rmScoreboard *score;
     GError       *err = NULL;
     gint          i;
@@ -136,7 +135,7 @@ int main(int argc, char *argv[])
 
     g_type_init();
 
-    if (! parse_args(argc, argv, &options)) { 
+    if (! parse_args(argc, argv, &options)) {
         return 1;
     }
 
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
 
     printf("Running scenario... ");
     score = rm_scenario_run(sc);
-    if (score->failed) { 
+    if (score->failed) {
         printf("TEST FAILED!\n");
     } else {
         printf("Done.\n");
@@ -158,7 +157,7 @@ int main(int argc, char *argv[])
 
     // Print out scoreboard
     printf("Totral requests: %u\n", score->requests);
-    printf("Elapsed Time:    %lf\n", score->elapsed); 
+    printf("Elapsed Time:    %lf\n", score->elapsed);
     printf("Response Codes:\n");
     for (i = 0; i < 6; i++) {
         if (score->resp_codes[i] > 0)
@@ -166,7 +165,7 @@ int main(int argc, char *argv[])
     }
 
     failed = score->failed;
-    
+
     if (sc->logger) g_object_unref(sc->logger);
     rm_scenario_free(sc);
     rm_scoreboard_free(score);
@@ -174,13 +173,13 @@ int main(int argc, char *argv[])
     return (failed ? 100 : 0);
 
 exitwitherror:
-    if (err != NULL) { 
+    if (err != NULL) {
         fprintf(stderr, "ERROR: %s\n", err->message);
     }
 
     return 2;
 }
 
-/** 
+/**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */
