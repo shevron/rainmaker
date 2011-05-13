@@ -120,6 +120,13 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
     msg = soup_message_new_from_uri(g_quark_to_string(request->method), request->url);
     soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
 
+    // Add body
+    if (request->body != NULL) {
+        g_assert(request->bodyType != NULL);
+        soup_message_set_request(msg, request->bodyType, SOUP_MEMORY_TEMPORARY,
+            request->body, request->bodyLength);
+    }
+
     // Add headers
     g_slist_foreach(request->headers, (GFunc) add_header_to_message, (gpointer) msg);
 

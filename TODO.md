@@ -3,7 +3,6 @@ Rainmaker 1.0 TODO
 
 HTTP Feature Support
 --------------------
-- POST / PUT raw data submission
 - Form data submission
   - POST urlencoded vs. multiplart
   - GET

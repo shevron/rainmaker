@@ -25,6 +25,7 @@ typedef struct _rmRequest {
     GQuark    method;
     SoupURI  *url;
     GSList   *headers;
+    gchar    *bodyType;
     gchar    *body;
     gsize     bodyLength;
     gboolean  freeBody;

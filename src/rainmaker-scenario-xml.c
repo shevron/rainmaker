@@ -89,6 +89,62 @@ gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, GError *
 
 gboolean read_request_body_raw_data(xmlNode *node, rmRequest *request, GError **error)
 {
+    xmlChar  *attr;
+    gchar    *body;
+    gsize     body_len;
+    gboolean  base64, trim;
+
+    g_assert(node->type == XML_ELEMENT_NODE && xmlStrcmp(node->name, BAD_CAST "rawData") == 0);
+
+    // Get content
+    body = (gchar *) xmlNodeListGetString(node->doc, node->children, 1);
+    if (body == NULL) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_ALLOC,
+                "error reading raw body value from scenario XML");
+        return FALSE;
+    }
+
+    // Do we need to somehow manipulate the raw body?
+    base64 = FALSE;
+    trim   = FALSE;
+    if ((attr = xmlGetProp(node, BAD_CAST "base64"))) {
+        if (XML_ATTR_TO_BOOLEAN(attr)) {
+            base64 = TRUE;
+        }
+        xmlFree(attr);
+    }
+
+    if ((attr = xmlGetProp(node, BAD_CAST "trim"))) {
+        if (XML_ATTR_TO_BOOLEAN(attr)) {
+            trim = TRUE;
+        }
+        xmlFree(attr);
+    }
+
+    if (base64) {
+        body = (gchar *) g_base64_decode_inplace((gchar *) body, &body_len);
+        body = g_realloc_n(body, body_len + 1, sizeof(gchar));
+    } else if(trim) {
+        body = g_strstrip(body);
+        body_len = xmlStrlen(BAD_CAST body);
+        body = g_realloc_n(body, body_len + 1, sizeof(gchar));
+
+    } else {
+        body_len = xmlStrlen(BAD_CAST body);
+    }
+
+    // Set the content type
+    if ((attr == xmlGetProp(node, BAD_CAST "contentType"))) {
+        // rmRequest will free the content type when freed, no need to copy XML string
+        request->bodyType = (gchar *) attr;
+    } else {
+        request->bodyType = g_strdup("application/octet-stream");
+    }
+
+    request->body = body;
+    request->bodyLength = body_len;
+    request->freeBody = TRUE;
+
     return TRUE;
 }
 

@@ -51,6 +51,7 @@ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GEr
 
     req->method     = g_quark_from_string(method);
     req->headers    = NULL;
+    req->bodyType   = NULL;
     req->body       = NULL;
     req->bodyLength = 0;
     req->freeBody   = FALSE;
@@ -73,6 +74,9 @@ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GEr
 }
 /* rm_request_new }}} */
 
+/// Copy a header to a request object's header list. This creates a full copy
+/// of the header's name and value
+///
 void rm_header_copy_to_request(rmHeader *header, rmRequest *dest)
 {
     rm_request_add_header(dest, header->name, header->value, header->replace);
@@ -89,6 +93,9 @@ void rm_request_free(rmRequest *req)
 
     if (req->freeBody && req->body != NULL)
         g_free(req->body);
+
+    if (req->bodyType != NULL)
+        g_free(req->bodyType);
 
     g_free(req);
 }
