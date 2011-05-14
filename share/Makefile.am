@@ -6,9 +6,7 @@
 # New BSD License. See COPYING for license details.
 ##
 
-# rainmaker main Makefile.am template
+# Shared data files Makefile.am
 
-ACLOCAL_AMFLAGS = -I m4
-
-SUBDIRS = src \
-          share
+rmsharedir = $(datadir)/@PACKAGE@
+rmshare_DATA = rainmaker-scenario-1.0.xsd

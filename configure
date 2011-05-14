@@ -616,6 +616,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+RM_DATA_DIR
 libxml2_LIBS
 libxml2_CFLAGS
 LIBSOUP_LIBS
@@ -2210,13 +2211,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-ac_config_headers="$ac_config_headers config.h"
-
-
-am__api_version='1.11'
 
 ac_aux_dir=
-for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
+for ac_dir in build-aux "$srcdir"/build-aux; do
   if test -f "$ac_dir/install-sh"; then
     ac_aux_dir=$ac_dir
     ac_install_sh="$ac_aux_dir/install-sh -c"
@@ -2232,7 +2229,7 @@ for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   fi
 done
 if test -z "$ac_aux_dir"; then
-  as_fn_error $? "cannot find install-sh, install.sh, or shtool in \"$srcdir\" \"$srcdir/..\" \"$srcdir/../..\"" "$LINENO" 5
+  as_fn_error $? "cannot find install-sh, install.sh, or shtool in build-aux \"$srcdir\"/build-aux" "$LINENO" 5
 fi
 
 # These three variables are undocumented and unsupported,
@@ -2243,6 +2240,11 @@ ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
+
+ac_config_headers="$ac_config_headers config.h"
+
+
+am__api_version='1.11'
 
 # Find a good install program.  We prefer a C program (faster),
 # so one script is as good as another.  But avoid the broken or
@@ -7693,6 +7695,10 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
+## CAVEAT EMPTOR:
+## There is no encapsulation within the following macros, do not change
+## the running order or otherwise move them around unless you know exactly
+## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -11445,12 +11451,12 @@ if test -n "$LIBSOUP_CFLAGS"; then
     pkg_cv_LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4 >= 2.24" 2>/dev/null`
+  pkg_cv_LIBSOUP_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4 >= 2.4" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11461,12 +11467,12 @@ if test -n "$LIBSOUP_LIBS"; then
     pkg_cv_LIBSOUP_LIBS="$LIBSOUP_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_LIBS=`$PKG_CONFIG --libs "libsoup-2.4 >= 2.24" 2>/dev/null`
+  pkg_cv_LIBSOUP_LIBS=`$PKG_CONFIG --libs "libsoup-2.4 >= 2.4" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11486,14 +11492,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4 >= 2.24" 2>&1`
+	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4 >= 2.4" 2>&1`
         else
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4 >= 2.24" 2>&1`
+	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4 >= 2.4" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBSOUP_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libsoup-2.4 >= 2.24) were not met:
+	as_fn_error $? "Package requirements (libsoup-2.4 >= 2.4) were not met:
 
 $LIBSOUP_PKG_ERRORS
 
@@ -11741,63 +11747,26 @@ fi
 done
 
 
-# Checks for typedefs, structures, and compiler characteristics.
+# Define the location of the share dir
 
-# Checks for library functions.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for soup_cookie_jar_new in -lsoup-2.4" >&5
-$as_echo_n "checking for soup_cookie_jar_new in -lsoup-2.4... " >&6; }
-if ${ac_cv_lib_soup_2_4_soup_cookie_jar_new+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lsoup-2.4 $LIBSOUP_LIBS $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+  prefix_NONE=
+  exec_prefix_NONE=
+  test "x$prefix" = xNONE && prefix_NONE=yes && prefix=$ac_default_prefix
+  test "x$exec_prefix" = xNONE && exec_prefix_NONE=yes && exec_prefix=$prefix
+  eval ac_define_dir="\"${datadir}/$PACKAGE_NAME\""
+  eval ac_define_dir="\"$ac_define_dir\""
+  RM_DATA_DIR="$ac_define_dir"
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char soup_cookie_jar_new ();
-int
-main ()
-{
-return soup_cookie_jar_new ();
-  ;
-  return 0;
-}
+
+cat >>confdefs.h <<_ACEOF
+#define RM_DATA_DIR "$ac_define_dir"
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_soup_2_4_soup_cookie_jar_new=yes
-else
-  ac_cv_lib_soup_2_4_soup_cookie_jar_new=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_soup_2_4_soup_cookie_jar_new" >&5
-$as_echo "$ac_cv_lib_soup_2_4_soup_cookie_jar_new" >&6; }
-if test "x$ac_cv_lib_soup_2_4_soup_cookie_jar_new" = xyes; then :
+
+  test "$prefix_NONE" && prefix=NONE
+  test "$exec_prefix_NONE" && exec_prefix=NONE
 
 
-$as_echo "#define HAVE_LIBSOUP_COOKIEJAR 1" >>confdefs.h
-
-
-else
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: libsoup is too old, cookie persistance support is disabled" >&5
-$as_echo "$as_me: WARNING: libsoup is too old, cookie persistance support is disabled" >&2;}
-
-fi
-
-
-
-
-
-ac_config_files="$ac_config_files Makefile src/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile share/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -12811,6 +12780,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "share/Makefile") CONFIG_FILES="$CONFIG_FILES share/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
