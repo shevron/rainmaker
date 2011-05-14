@@ -61,7 +61,8 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(rmsharedir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_rmtest_OBJECTS = rmtest-main.$(OBJEXT) rainmaker-client.$(OBJEXT) \
 	rainmaker-request.$(OBJEXT) rainmaker-scenario.$(OBJEXT) \
-	rainmaker-scenario-xml.$(OBJEXT)
+	rainmaker-scenario-xml.$(OBJEXT) \
+	rainmaker-scoreboard.$(OBJEXT)
 rmtest_OBJECTS = $(am_rmtest_OBJECTS)
 rmtest_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -231,7 +232,8 @@ rmtest_SOURCES = rmtest-main.c \
                  rainmaker-client.c \
                  rainmaker-request.c \
                  rainmaker-scenario.c \
-                 rainmaker-scenario-xml.c
+                 rainmaker-scenario-xml.c \
+                 rainmaker-scoreboard.c
 
 xsdFile = rainmaker-scenario-1.0.xsd
 rmsharedir = $(datadir)/$(PACKAGE)
@@ -331,6 +333,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-scenario-xml.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-scenario.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rainmaker-scoreboard.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rmtest-main.Po@am__quote@
 
 .c.o:

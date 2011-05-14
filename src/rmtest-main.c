@@ -10,12 +10,15 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "config.h"
-
 #include "rainmaker-scenario.h"
 #include "rainmaker-scenario-xml.h"
 #include "rainmaker-request.h"
 #include "rainmaker-client.h"
+#include "rainmaker-scoreboard.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #ifndef RM_MAX_CLIENTS
 #define RM_MAX_CLIENTS 100
@@ -29,6 +32,11 @@ typedef struct _cmdlineArgs {
     guint     verbosity;
     gchar    *scenarioFile;
 } cmdlineArgs;
+
+typedef struct _rmThreadClient {
+    rmClient   *client;
+    rmScenario *scenario;
+} rmThreadClient;
 
 // Verbosity levels
 enum {
@@ -76,25 +84,25 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
     g_option_context_free(ctx);
 
     if (! res) {
-        g_printerr("failed parsing arguments: %s\n", error->message);
+        g_printerr("ERROR: failed parsing arguments: %s\n", error->message);
         return FALSE;
     }
 
     // Get remaining argument
     if (argc != 2) {
-        g_printerr("error: no scenario file specified, run with --help for help\n");
+        g_printerr("ERROR: no scenario file specified, run with --help for help\n");
         return FALSE;
     }
     options->scenarioFile = argv[1];
 
     // Check verbosity value
     if (options->verbosity < 0 || options->verbosity > 4) {
-        g_printerr("error: verbosity must be between 0 and 4\n");
+        g_printerr("ERROR: verbosity must be between 0 and 4\n");
         return FALSE;
     }
 
     if (options->clients < 1|| options->clients > RM_MAX_CLIENTS) {
-        g_printerr("error: number of clients must be between 1 and %u\n", RM_MAX_CLIENTS);
+        g_printerr("ERROR: number of clients must be between 1 and %u\n", RM_MAX_CLIENTS);
         return FALSE;
     }
 
@@ -125,14 +133,22 @@ static SoupLogger* create_logger(cmdlineArgs *args)
     return logger;
 }
 
+static void run_client(rmThreadClient *client)
+{
+    rm_client_run_scenario(client->client, client->scenario);
+}
+
 int main(int argc, char *argv[])
 {
-    cmdlineArgs   options;
-    rmScenario   *sc;
-    rmScoreboard *score;
-    GError       *err = NULL;
-    gint          i;
-    gboolean      failed = FALSE;
+    cmdlineArgs      options;
+    rmScenario      *sc;
+    rmThreadClient **clients;
+    GThread        **threads;
+    rmScoreboard    *total;
+    GError          *err = NULL;
+    SoupLogger      *logger = NULL;
+    gint             i;
+    gboolean         failed = FALSE;
 
     // Text for different HTTP response code classes
     static gchar* respcodes[] = {
@@ -145,6 +161,7 @@ int main(int argc, char *argv[])
     };
 
     g_type_init();
+    g_thread_init(NULL);
 
     if (! parse_args(argc, argv, &options)) {
         return 1;
@@ -155,38 +172,63 @@ int main(int argc, char *argv[])
 
     // Set up logger
     if (options.verbosity > VERBOSITY_SUMMARY) {
-        sc->logger = create_logger(&options);
+        logger = create_logger(&options);
     }
 
     printf("Running scenario... ");
 
-    if (options.clients > 1) {
-        g_thread_init(NULL);
-        score = rm_scenario_run_multi(sc, options.clients);
-    } else {
-        score = rm_scenario_run(sc);
+    // Create and run all clients
+    clients = g_malloc(sizeof(rmThreadClient *) * options.clients);
+    threads = g_malloc(sizeof(GThread *) * options.clients);
+    for (i = 0; i < options.clients; i++) {
+        clients[i] = g_malloc(sizeof(rmThreadClient));
+        clients[i]->client   = rm_client_new();
+        clients[i]->scenario = sc;
+        if (logger) {
+            // Attach logger
+            soup_session_add_feature(clients[i]->client->session, (SoupSessionFeature *) logger);
+        }
+
+        threads[i] = g_thread_create((GThreadFunc) run_client, (gpointer) clients[i], TRUE, NULL);
     }
 
-    if (score->failed) {
+    total = rm_scoreboard_new();
+
+    // Wait for all threads to finish
+    for (i = 0; i < options.clients; i++) {
+        g_thread_join(threads[i]);
+    }
+
+    // Free all clients
+    for (i = 0; i < options.clients; i++) {
+        rm_scoreboard_merge(total, clients[i]->client->scoreboard);
+        rm_client_free(clients[i]->client);
+        g_free(clients[i]);
+    }
+
+    g_free(clients);
+    g_free(threads);
+
+    if (total->failed) {
         printf("TEST FAILED!\n");
     } else {
         printf("done.\n");
     }
 
     // Print out scoreboard
-    printf("Total requests: %u\n", score->requests);
-    printf("Elapsed Time:    %lf\n", score->elapsed);
+    printf("Total requests: %u\n", total->requests);
+    printf("Elapsed Time:   %lf\n", total->elapsed);
     printf("Response Codes:\n");
     for (i = 0; i < 6; i++) {
-        if (score->resp_codes[i] > 0)
-            printf("  %uxx %-15s: %u\n", i, respcodes[i], score->resp_codes[i]);
+        if (total->resp_codes[i] > 0)
+            printf("  %uxx %-15s: %u\n", i, respcodes[i], total->resp_codes[i]);
     }
 
-    failed = score->failed;
+    failed = total->failed;
 
-    if (sc->logger) g_object_unref(sc->logger);
+    if (logger) g_object_unref(logger);
     rm_scenario_free(sc);
-    rm_scoreboard_free(score);
+    rm_scoreboard_free(total);
 
     return (failed ? 100 : 0);
 

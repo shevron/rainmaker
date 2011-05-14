@@ -9,34 +9,24 @@
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#include "rainmaker-request.h"
-
 #ifndef _HAVE_RAINMAKER_CLIENT_H
 
-typedef struct _rmScoreboard { 
-    guint     requests;
-    guint     resp_codes[6];
-    gdouble   elapsed;
-    GTimer   *stopwatch;
-    gboolean  failed;
-} rmScoreboard; 
+#include "rainmaker-scenario.h"
+#include "rainmaker-scoreboard.h"
 
 typedef struct _rmClient {
     SoupSession  *session;
     rmScoreboard *scoreboard;
 } rmClient;
 
-rmScoreboard *rm_scoreboard_new();
-void          rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src);
-void          rm_scoreboard_free(rmScoreboard *sb);
 rmClient*     rm_client_new();
 void          rm_client_set_logger(rmClient *client, SoupLogger *logger);
 void          rm_client_free(rmClient *client);
-guint         rm_client_send_request(rmClient *client, rmRequest *request);
+void          rm_client_run_scenario(rmClient *client, rmScenario *scenario);
 
 #define _HAVE_RAINMAKER_CLIENT_H
 #endif
 
-/** 
+/**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */

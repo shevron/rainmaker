@@ -10,56 +10,8 @@
 #include <libsoup/soup.h>
 
 #include "rainmaker-client.h"
-
-/* {{{ rmScoreboard *rm_scoreboard_new()
- *
- * Create a new scoreboard struct
- */
-rmScoreboard *rm_scoreboard_new()
-{
-    rmScoreboard *sb;
-
-    sb = g_malloc0(sizeof(rmScoreboard));
-    sb->stopwatch = g_timer_new();
-
-    return sb;
-}
-/* rm_scoreboard_new }}} */
-
-/* {{{ void rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src)
- *
- * Merge results from one scoreboard to another
- */
-void rm_scoreboard_merge(rmScoreboard *target, rmScoreboard *src)
-{
-    gint i;
-
-    g_assert(target != NULL);
-    g_assert(src != NULL);
-
-    if (src->requests) {
-        target->requests += src->requests;
-        target->elapsed  += src->elapsed;
-
-        for (i = 0; i < 6; i++) {
-            target->resp_codes[i] += src->resp_codes[i];
-        }
-
-        target->failed = (target->failed || src->failed);
-    }
-}
-/* rm_scoreboard_merge }}} */
-
-/* {{{ void rm_scoreboard_free(rmScoreboard *sb)
- *
- * Free a scoreboard struct and all related memory
- */
-void rm_scoreboard_free(rmScoreboard *sb)
-{
-    g_timer_destroy(sb->stopwatch);
-    g_free(sb);
-}
-/* rm_scoreboard_free }}} */
+#include "rainmaker-scenario.h"
+#include "rainmaker-scoreboard.h"
 
 /* {{{ rmClient *rm_client_new()
  *
@@ -112,7 +64,7 @@ static void add_header_to_message(rmHeader *header, SoupMessage *msg)
  *
  * Send a single request through the client, keeping score using the scoreboard
  */
-guint rm_client_send_request(rmClient *client, rmRequest *request)
+static guint rm_client_send_request(rmClient *client, rmRequest *request)
 {
     SoupMessage *msg;
     guint        status;
@@ -149,6 +101,40 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
     return status;
 }
 /* rm_client_send_request }}} */
+
+void rm_client_run_scenario(rmClient *client, rmScenario *scenario)
+{
+    GSList        *rlNode;
+    guint          status, i;
+    SoupCookieJar *cookieJar = NULL;
+
+    // Enable cookie persistence if needed
+    if (scenario->persistCookies) {
+        cookieJar = soup_cookie_jar_new();
+        soup_session_add_feature(client->session, (SoupSessionFeature *) cookieJar);
+    }
+
+    for (rlNode = scenario->requests; rlNode; rlNode = rlNode->next) {
+        rmRequest *req = (rmRequest *) rlNode->data;
+        g_assert(req != NULL);
+        g_assert(req->repeat >= 1); // request is sane
+
+        for (i = 0; i < req->repeat; i++) {
+            status = rm_client_send_request(client, req);
+
+            if ((status < 100 && scenario->failOnTcpError) ||
+                (status >= 400 && scenario->failOnHttpError)) {
+
+                client->scoreboard->failed = TRUE;
+                break;
+            }
+        }
+
+        if (client->scoreboard->failed) break;
+    }
+
+    if (cookieJar) g_object_unref(cookieJar);
+}
 
 /**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker

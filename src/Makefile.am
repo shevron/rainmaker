@@ -14,7 +14,8 @@ rmtest_SOURCES = rmtest-main.c \
                  rainmaker-client.c \
                  rainmaker-request.c \
                  rainmaker-scenario.c \
-                 rainmaker-scenario-xml.c
+                 rainmaker-scenario-xml.c \
+                 rainmaker-scoreboard.c
 
 xsdFile = rainmaker-scenario-1.0.xsd
 rmsharedir = $(datadir)/$(PACKAGE)
