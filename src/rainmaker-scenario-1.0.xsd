@@ -37,6 +37,14 @@
 		</restriction>
 	</simpleType>
 	
+	<simpleType name="formEncType">
+		<restriction base="token">
+			<enumeration value="application/x-www-form-urlencoded" />
+			<enumeration value="multipart/form-data" />
+			<enumeration value="application/json" />
+		</restriction>
+	</simpleType>
+	
 	<complexType name="script">
 		<simpleContent>
 			<extension base="string">
@@ -79,7 +87,18 @@
 	</complexType>
 	
 	<complexType name="formData">
-	
+		<choice minOccurs="1" maxOccurs="unbounded">
+			<element name="formParam">
+				<complexType>
+					<simpleContent>
+						<extension base="token">
+							<attribute name="name" type="token" use="required" />
+						</extension>
+					</simpleContent>
+				</complexType>
+			</element>
+		</choice>
+		<attribute name="enctype" type="rm:formEncType" use="optional" default="application/x-www-form-urlencoded" />
 	</complexType>
 	
 	<complexType name="request">

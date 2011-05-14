@@ -5,6 +5,7 @@ HTTP Feature Support
 --------------------
 - Form data submission
   - POST urlencoded vs. multiplart
+  - POST as JSON
   - GET
 - Keepalive (?)
 
