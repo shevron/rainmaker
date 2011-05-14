@@ -10,6 +10,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
+#include <libxml/xpathInternals.h>
 #include <libxml/xmlschemas.h>
 #include <glib.h>
 
@@ -29,9 +30,15 @@
 #define RM_XML_XSD_FILE "rainmaker-scenario-1.0.xsd"
 #endif
 
+#ifndef RM_XML_NS
+#define RM_XML_NS "http://arr.gr/rainmaker/xmlns/scenario/1.0"
+#endif
+
 #define XML_ATTR_TO_BOOLEAN(v) (xmlStrcmp(v, BAD_CAST "yes") == 0 || xmlStrcmp(v, BAD_CAST "true") == 0)
 #define XML_IF_NODE_NAME(nd, nm) if (xmlStrcmp(nd->name, BAD_CAST nm) == 0)
 
+/// Read request headers from XML tree. This will use XPath to grab both the
+/// default client headers as well as the request specific headers and set them
 static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **error)
 {
     xmlXPathContextPtr  xpathCtx;
@@ -41,7 +48,7 @@ static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GErr
     gboolean            replace;
     guint               i;
 
-    const xmlChar *xpathExpr = BAD_CAST "headers/header";
+    const xmlChar *xpathExpr = BAD_CAST "rm:headers/rm:header";
 
     g_assert(node->type == XML_ELEMENT_NODE);
 
@@ -54,6 +61,14 @@ static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GErr
     }
     xpathCtx->node = node;
 
+    // Register XML namespace
+    if(xmlXPathRegisterNs(xpathCtx, BAD_CAST "rm", BAD_CAST RM_XML_NS) != 0) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_ALLOC,
+            "unable to register XML namespace '%s' in XPath context", RM_XML_NS);
+        xmlXPathFreeContext(xpathCtx);
+        return FALSE;
+    }
+
     xpath = xmlXPathEvalExpression(xpathExpr, xpathCtx);
     if (xpath == NULL) {
         g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_ALLOC,
@@ -63,7 +78,7 @@ static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GErr
     }
 
     nodes = xpath->nodesetval;
-    for (i = 0; i < nodes->nodeNr; i++) {
+    for (i = 0; nodes && i < nodes->nodeNr; i++) {
         g_assert(nodes->nodeTab[i]);
 
         attr = xmlGetProp(nodes->nodeTab[i], BAD_CAST "replace");
