@@ -66,6 +66,7 @@
 		<simpleContent>
 			<extension base="token">
 				<attribute name="name" type="rm:headerName" use="required" />
+				<attribute name="replace" type="rm:boolean" use="optional" />
 			</extension>
 		</simpleContent>
 	</complexType>
