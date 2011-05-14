@@ -4,9 +4,10 @@ Rainmaker 1.0 TODO
 HTTP Feature Support
 --------------------
 - Form data submission
-  - POST urlencoded vs. multiplart
-  - POST as JSON
-  - GET
+  - POST as multiplart
+  	- file upload support
+  - POST as JSON (?)
+  - GET parameters (?)
 - Keepalive (?)
 
 Testing and Analysis
@@ -24,3 +25,8 @@ Concurrency
 -----------
 - Single machine concurrency (threads)
 - Multi-machine concurrency (master / slaves) 
+
+Internal
+--------
+- Simplify rmRequestParamType - only need scalars, arrays, objects and file
+- Get rid of baseRequest - there should be a client setup section, and requests
