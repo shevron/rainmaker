@@ -59,7 +59,7 @@ static void add_header_to_message(rmHeader *header, SoupMessage *msg)
 static guint rm_client_send_request(rmClient *client, rmRequest *request)
 {
     SoupMessage *msg;
-    guint        status;
+    guint        status, s;
 
     msg = soup_message_new_from_uri(g_quark_to_string(request->method), request->url);
     soup_message_set_flags(msg, SOUP_MESSAGE_NO_REDIRECT);
@@ -79,13 +79,18 @@ static guint rm_client_send_request(rmClient *client, rmRequest *request)
 
     // Send request
     status = soup_session_send_message(client->session, msg);
+    s = status / 100;
 
     // Stop timer
     g_timer_stop(client->scoreboard->stopwatch);
 
     // Count request and response code, add elapsed time
     client->scoreboard->requests++;
-    client->scoreboard->resp_codes[(status / 100)]++;
+    if (s >= 0 && s <= 5) {
+        client->scoreboard->resp_codes[s]++;
+    } else {
+        g_printerr("WARNING: strange HTTP response code '%u' encountered\n", status);
+    }
     client->scoreboard->elapsed += g_timer_elapsed(client->scoreboard->stopwatch, NULL);
 
     g_object_unref((gpointer) msg);
