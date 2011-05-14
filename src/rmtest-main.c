@@ -17,6 +17,10 @@
 #include "rainmaker-request.h"
 #include "rainmaker-client.h"
 
+#ifndef RM_MAX_CLIENTS
+#define RM_MAX_CLIENTS 100
+#endif
+
 // Options set through command line args
 typedef struct _cmdlineArgs {
     guint     clients;
@@ -45,7 +49,9 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
     GError         *error = NULL;
     gboolean        res;
 
+    // Set some defaults
     bzero(options, sizeof(cmdlineArgs));
+    options->clients = 1;
 
     GOptionEntry    arguments[] = {
         {"clients", 'c', 0, G_OPTION_ARG_INT, &options->clients,
@@ -84,6 +90,11 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
     // Check verbosity value
     if (options->verbosity < 0 || options->verbosity > 4) {
         g_printerr("error: verbosity must be between 0 and 4\n");
+        return FALSE;
+    }
+
+    if (options->clients < 1|| options->clients > RM_MAX_CLIENTS) {
+        g_printerr("error: number of clients must be between 1 and %u\n", RM_MAX_CLIENTS);
         return FALSE;
     }
 
@@ -148,15 +159,22 @@ int main(int argc, char *argv[])
     }
 
     printf("Running scenario... ");
-    score = rm_scenario_run(sc);
+
+    if (options.clients > 1) {
+        g_thread_init(NULL);
+        score = rm_scenario_run_multi(sc, options.clients);
+    } else {
+        score = rm_scenario_run(sc);
+    }
+
     if (score->failed) {
         printf("TEST FAILED!\n");
     } else {
-        printf("Done.\n");
+        printf("done.\n");
     }
 
     // Print out scoreboard
-    printf("Totral requests: %u\n", score->requests);
+    printf("Total requests: %u\n", score->requests);
     printf("Elapsed Time:    %lf\n", score->elapsed);
     printf("Response Codes:\n");
     for (i = 0; i < 6; i++) {

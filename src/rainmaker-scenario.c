@@ -122,7 +122,13 @@ rmScoreboard* rm_scenario_run(rmScenario *scenario)
 }
 /* rm_scenario_run }}} */
 
+rmScoreBoard* rm_scenario_run_multi(rmScenario *scenario, guint clients)
+{
+    rmScoreboard *total;
+
+    g_assert(g_thread_get_initialized());
+}
+
 /**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */
-

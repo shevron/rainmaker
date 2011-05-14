@@ -10,15 +10,15 @@
 #include <libsoup/soup.h>
 
 #include "rainmaker-request.h"
-#include "rainmaker-client.h" 
+#include "rainmaker-client.h"
 
 #ifndef _HAVE_RAINMAKER_SCENARIO_H
 
-/* {{{ typedef struct rmScenario 
+/* {{{ typedef struct rmScenario
  *
  * Scenario struct
  */
-typedef struct _rmScenario { 
+typedef struct _rmScenario {
     GSList     *requests;
     SoupLogger *logger;
     gboolean    persistCookies;
@@ -29,12 +29,13 @@ typedef struct _rmScenario {
 
 rmScenario*   rm_scenario_new();
 rmScoreboard* rm_scenario_run(rmScenario *scenario);
+rmScoreBoard* rm_scenario_run_multi(rmScenario *scenario, guint clients);
 void          rm_scenario_add_request(rmScenario *scenario, rmRequest *request);
 void          rm_scenario_free(rmScenario *scenario);
 
 #define _HAVE_RAINMAKER_SCENARIO_H
 #endif;
 
-/** 
+/**
  * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
  */
