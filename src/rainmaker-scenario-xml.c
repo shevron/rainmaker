@@ -10,6 +10,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
+#include <libxml/xmlschemas.h>
 #include <glib.h>
 
 #include "rainmaker-request.h"
@@ -18,6 +19,10 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#ifndef RM_DATA_DIR
+#define RM_DATA_DIR "./"
 #endif
 
 #ifndef RM_XML_XSD_FILE
@@ -360,6 +365,72 @@ static gboolean read_options_xml(xmlNode *node, rmScenario *scenario, GError **e
     return TRUE;
 }
 
+static gboolean validate_scenario_xml(const xmlDocPtr doc, GError **error)
+{
+    xmlDocPtr              schemaDoc  = NULL;
+    xmlSchemaParserCtxtPtr parserCtxt = NULL;
+    xmlSchemaPtr           schema     = NULL;
+    xmlSchemaValidCtxtPtr  validCtxt  = NULL;
+    int                    status;
+
+    schemaDoc = xmlReadFile(RM_DATA_DIR RM_XML_XSD_FILE, NULL, XML_PARSE_NONET);
+    if (schemaDoc == NULL) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "error reading XML schema file '%s'", RM_DATA_DIR RM_XML_XSD_FILE);
+        goto returnWithError;
+    }
+
+    parserCtxt = xmlSchemaNewDocParserCtxt(schemaDoc);
+    if (parserCtxt == NULL) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "unable to create XML parser context from schema doc");
+        goto returnWithError;
+    }
+
+    schema = xmlSchemaParse(parserCtxt);
+    if (schema == NULL) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "XML schema '%s' is invalid", RM_DATA_DIR RM_XML_XSD_FILE);
+        goto returnWithError;
+    }
+
+    validCtxt = xmlSchemaNewValidCtxt(schema);
+    if (validCtxt == NULL) {
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "unable to create XML schema validation context from schema doc");
+        goto returnWithError;
+    }
+
+    // Validate document
+    status = xmlSchemaValidateDoc(validCtxt, doc);
+    if (status < 0) {
+        // Internal parser error
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "an internal schema validator error has occurred");
+        goto returnWithError;
+    } else if (status > 0) {
+        // Validation error
+        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                "the provided scenario file is not valid");
+        goto returnWithError;
+    }
+
+    xmlFreeDoc(schemaDoc);
+    xmlSchemaFreeParserCtxt(parserCtxt);
+    xmlSchemaFree(schema);
+    xmlSchemaFreeValidCtxt(validCtxt);
+
+    return TRUE;
+
+returnWithError:
+    if (schemaDoc != NULL)  xmlFreeDoc(schemaDoc);
+    if (parserCtxt != NULL) xmlSchemaFreeParserCtxt(parserCtxt);
+    if (schema != NULL)     xmlSchemaFree(schema);
+    if (validCtxt != NULL)  xmlSchemaFreeValidCtxt(validCtxt);
+
+    return FALSE;
+}
+
 /* {{{ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
  *
  * Read a scenario XML file from an open stream and return a scenario struct
@@ -388,16 +459,9 @@ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
     xmlFreeParserCtxt(xmlCtx);
 
     // Validate XML according to schema
-    g_print("schema file: %s\n", RM_DATA_DIR RM_XML_XSD_FILE);
-
-    root_node = xmlDocGetRootElement(xmlDoc);
-    if (root_node == NULL || (xmlStrcmp(root_node->name, BAD_CAST "testScenario") != 0)) {
-        g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
-            "unexpected XML root element: '%s', expecting '%s'",
-            root_node->name,
-            "testScenario");
-    } else {
+    if (validate_scenario_xml(xmlDoc, error)) {
         // Iterate tree and read data into memory
+        root_node = xmlDocGetRootElement(xmlDoc);
         scenario = rm_scenario_new();
         baseRequest = g_malloc0(sizeof(rmRequest));
 
