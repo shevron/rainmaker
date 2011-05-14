@@ -1,10 +1,10 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <glib.h>
 #include <libsoup/soup.h>
@@ -13,10 +13,8 @@
 #include "rainmaker-scenario.h"
 #include "rainmaker-scoreboard.h"
 
-/* {{{ rmClient *rm_client_new()
- *
- * Create a new rmClient struct
- */
+/// Create a new client and allocate relevant memory. Will also allocate
+/// the client's SoupSession and rmScoreboard
 rmClient* rm_client_new()
 {
     rmClient *client;
@@ -27,30 +25,24 @@ rmClient* rm_client_new()
 
     return client;
 }
-/* rm_client_new }}} */
 
-/* {{{ void rm_client_set_logger(rmClient *client, SoupLogger *logger)
- *
- * Set a logger for this client
- */
+/// Set the client's logger object
 void rm_client_set_logger(rmClient *client, SoupLogger *logger)
 {
     soup_session_add_feature(client->session, (SoupSessionFeature *) logger);
 }
-/* rm_client_set_logger }}} */
 
-/* {{{ void rm_client_free(rmClient *client)
- *
- * Free an rmClient struct and all related resources
- */
+/// Free a client and related memory. Will also unref the client's SoupSession
+/// and free the associated scoreboard
 void rm_client_free(rmClient *client)
 {
     g_object_unref((gpointer) client->session);
     rm_scoreboard_free(client->scoreboard);
     g_free(client);
 }
-/* rm_client_free }}} */
 
+/// Add a header struct to a SoupMessage. If the header's replace flag is
+/// set, will replace any existing headers with the same name.
 static void add_header_to_message(rmHeader *header, SoupMessage *msg)
 {
     if (header->replace) {
@@ -60,10 +52,10 @@ static void add_header_to_message(rmHeader *header, SoupMessage *msg)
     }
 }
 
-/* {{{ gboolean rm_client_send_request(rmClient *client, rmRequest *request)
- *
- * Send a single request through the client, keeping score using the scoreboard
- */
+/// Send a request. Will convert the rmRequest struct to a SoupMessage and send
+/// it synchronously.
+///
+/// @todo consider re-using the message objects for performance reasons
 static guint rm_client_send_request(rmClient *client, rmRequest *request)
 {
     SoupMessage *msg;
@@ -100,8 +92,8 @@ static guint rm_client_send_request(rmClient *client, rmRequest *request)
 
     return status;
 }
-/* rm_client_send_request }}} */
 
+/// Run a scenario using the client.
 void rm_client_run_scenario(rmClient *client, rmScenario *scenario)
 {
     GSList        *rlNode;
@@ -136,6 +128,4 @@ void rm_client_run_scenario(rmClient *client, rmScenario *scenario)
     if (cookieJar) g_object_unref(cookieJar);
 }
 
-/**
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2

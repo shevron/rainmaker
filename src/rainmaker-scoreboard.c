@@ -1,10 +1,10 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <glib.h>
 
@@ -44,3 +44,5 @@ void rm_scoreboard_free(rmScoreboard *sb)
     g_timer_destroy(sb->stopwatch);
     g_free(sb);
 }
+
+// vim:ts=4:expandtab:cindent:sw=2

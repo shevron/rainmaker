@@ -23,7 +23,6 @@ Testing and Analysis
 
 Concurrency
 -----------
-- Single machine concurrency (threads)
 - Multi-machine concurrency (master / slaves) 
 
 Internal

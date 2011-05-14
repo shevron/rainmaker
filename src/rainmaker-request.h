@@ -1,15 +1,15 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#ifndef _HAVE_RAINMAKER_REQUEST_H
+#ifndef HAVE_RAINMAKER_REQUEST_H
 
 typedef struct _rmHeader {
     gchar    *name;
@@ -42,30 +42,26 @@ typedef struct _rmRequestParam {
     };
 } rmRequestParam;
 
-/* {{{ typedef struct rmRequest
- *
- * Rainmaker request struct
- */
+/// Rainmaker request struct
 typedef struct _rmRequest {
-    GQuark    method;
-    SoupURI  *url;
-    GSList   *headers;
-    GQuark    bodyType;
-    gchar    *body;
-    gsize     bodyLength;
-    gboolean  freeBody;
-    guint     repeat;
+    GQuark    method;      ///< request method
+    SoupURI  *url;         ///< request URL
+    GSList   *headers;     ///< request headers
+    GQuark    bodyType;    ///< request body content-type
+    gchar    *body;        ///< request body
+    gsize     bodyLength;  ///< request body size in bytes
+    gboolean  freeBody;    ///< do we need to free the body when done?
+    guint     repeat;      ///< how many times to repeat the request
 } rmRequest;
-/* }}} */
 
-/* {{{ Error Quark and codes */
+/// Error Quark for request related errors
 #define RM_ERROR_REQ g_quark_from_static_string("rainmaker-request-error")
 
+/// Request related error codes
 enum {
     RM_ERROR_REQ_INVALID_URI,
     RM_ERROR_REQ_INVALID_ENCTYPE
 };
-/* }}} */
 
 rmHeader*       rm_header_new(const gchar *name, const gchar *value);
 void            rm_header_copy_to_request(rmHeader *header, rmRequest *dest);
@@ -77,9 +73,7 @@ rmRequest*      rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl
 void            rm_request_add_header(rmRequest *request, const gchar *name, const gchar *value, gboolean reaplce);
 void            rm_request_free(rmRequest *req);
 
-#define _HAVE_RAINMAKER_REQUEST_H
+#define HAVE_RAINMAKER_REQUEST_H
 #endif
 
-/**
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2

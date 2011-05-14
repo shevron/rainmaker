@@ -1,12 +1,12 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
-#ifndef _HAVE_RAINMAKER_SCENARIO_XML_H
+#ifndef RAINMAKER_SCENARIO_XML_H_
 
 #include <glib.h>
 
@@ -21,9 +21,7 @@ enum {
 
 rmScenario *rm_scenario_xml_read_file(char *filename, GError **error);
 
-#define _HAVE_RAINMAKER_SCENARIO_XML_H
+#define RAINMAKER_SCENARIO_XML_H_
 #endif
 
-/** 
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2

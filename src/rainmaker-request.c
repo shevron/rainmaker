@@ -1,10 +1,10 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <glib.h>
 #include <libsoup/soup.h>
@@ -130,10 +130,9 @@ gchar* rm_request_encode_params(const GSList *params, GQuark encoding, gsize *bo
     return body;
 }
 
-/* {{{ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error)
- *
- * Create a new request struct with a defined URL
- */
+/// Create a new request struct with a defined method and URL. This can
+/// optionally use a pre-allocated base URL. The base URL will not be copied
+/// or freed, and it is the responsibility of the calling function to handle it
 rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error)
 {
     rmRequest *req;
@@ -163,7 +162,6 @@ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GEr
 
     return req;
 }
-/* rm_request_new }}} */
 
 /// Copy a header to a request object's header list. This creates a full copy
 /// of the header's name and value
@@ -173,10 +171,8 @@ void rm_header_copy_to_request(rmHeader *header, rmRequest *dest)
     rm_request_add_header(dest, header->name, header->value, header->replace);
 }
 
-/* {{{ void rm_request_free(rmRequest *req)
- *
- * Free a request struct and all related memory
- */
+/// Free a request struct and all related memory. Will also free the URL if set,
+/// the list of headers, and if set to do so, the request body.
 void rm_request_free(rmRequest *req)
 {
     if (req->url != NULL) soup_uri_free(req->url);
@@ -187,8 +183,5 @@ void rm_request_free(rmRequest *req)
 
     g_free(req);
 }
-/* rm_request_free }}} */
 
-/**
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2

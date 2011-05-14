@@ -1,6 +1,6 @@
 dnl --- 
 dnl rainmaker HTTP load generator
-dnl Copyright (c) 2010 Shahar Evron
+dnl Copyright (c) 2010-2011 Shahar Evron
 dnl 
 dnl rainmaker is free / open source software, available under the terms of the
 dnl New BSD License. See COPYING for license details.

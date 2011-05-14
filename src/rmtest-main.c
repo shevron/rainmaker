@@ -1,10 +1,10 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <glib.h>
 #include <stdio.h>
@@ -24,7 +24,7 @@
 #define RM_MAX_CLIENTS 100
 #endif
 
-// Options set through command line args
+/// Options set through command line arguments
 typedef struct _cmdlineArgs {
     guint     clients;
     guint     repeat;
@@ -33,12 +33,13 @@ typedef struct _cmdlineArgs {
     gchar    *scenarioFile;
 } cmdlineArgs;
 
+/// This struct is used to pass data to new client threads
 typedef struct _rmThreadClient {
     rmClient   *client;
     rmScenario *scenario;
 } rmThreadClient;
 
-// Verbosity levels
+/// Verbosity levels
 enum {
     VERBOSITY_SILENT,
     VERBOSITY_SUMMARY,
@@ -47,10 +48,7 @@ enum {
     VERBOSITY_FULL
 };
 
-/* {{{ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
- *
- * Parse commans line arguments
- */
+/// Parse command line arguments
 static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
 {
     GOptionContext *ctx;
@@ -108,7 +106,6 @@ static gboolean parse_args(int argc, char *argv[], cmdlineArgs *options)
 
     return TRUE;
 }
-/* parse_args }}} */
 
 static void log_printer(SoupLogger *logger, SoupLoggerLogLevel level,
     char direction, const char *data, gpointer user_data)
@@ -240,6 +237,4 @@ exitwitherror:
     return 2;
 }
 
-/**
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2

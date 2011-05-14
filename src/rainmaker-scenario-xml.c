@@ -1,10 +1,10 @@
-/**
- * Rainmaker HTTP load testing tool
- * Copyright (c) 2010-2011 Shahar Evron
- *
- * Rainmaker is free / open source software, available under the terms of the
- * New BSD License. See COPYING for license details.
- */
+/// ---------------------------------------------------------------------------
+/// Rainmaker HTTP load testing tool
+/// Copyright (c) 2010-2011 Shahar Evron
+///
+/// Rainmaker is free / open source software, available under the terms of the
+/// New BSD License. See COPYING for license details.
+/// ---------------------------------------------------------------------------
 
 #include <string.h>
 #include <libxml/parser.h>
@@ -494,10 +494,7 @@ returnWithError:
     return FALSE;
 }
 
-/* {{{ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
- *
- * Read a scenario XML file from an open stream and return a scenario struct
- */
+/// Read a scenario XML file from an open stream and return a scenario struct
 static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
 {
     xmlParserCtxtPtr  xmlCtx;
@@ -566,12 +563,8 @@ static rmScenario *read_scenario_from_xml_stream(FILE *file, GError **error)
     xmlFreeDoc(xmlDoc);
     return scenario;
 }
-/* read_scenario_from_xml_stream }}} */
 
-/* {{{ rmScenario *rm_scenario_xml_read_file(char *filename, GError **error)
- *
- * Read scenario from XML file and return a new scenario struct
- */
+/// Read scenario from XML file and return a new scenario struct
 rmScenario *rm_scenario_xml_read_file(char *filename, GError **error)
 {
     rmScenario *scenario;
@@ -598,8 +591,5 @@ rmScenario *rm_scenario_xml_read_file(char *filename, GError **error)
 
     return scenario;
 }
-/* rm_scenario_xml_read_file }}} */
 
-/**
- * vim:ts=4:expandtab:cindent:sw=2:foldmethod=marker
- */
+// vim:ts=4:expandtab:cindent:sw=2
