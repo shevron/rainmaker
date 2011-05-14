@@ -85,6 +85,19 @@
 		</choice>
 	</complexType>
 	
+	<complexType name="headers">
+		<choice minOccurs="1" maxOccurs="unbounded">
+			<element name="header" type="rm:requestHeader" />
+		</choice>
+	</complexType>
+	
+	<complexType name="clientSetup">
+		<all>
+			<element name="options" type="rm:options" minOccurs="0" maxOccurs="1" />
+			<element name="headers" type="rm:headers" minOccurs="0" maxOccurs="1" />
+		</all>
+	</complexType>
+	
 	<complexType name="rawData">
 		<simpleContent>
 			<extension base="string">
@@ -111,19 +124,13 @@
 	</complexType>
 	
 	<complexType name="request">
-		<choice minOccurs="0" maxOccurs="unbounded">
-			<element name="headers" maxOccurs="2">
-				<complexType>
-					<choice maxOccurs="unbounded" minOccurs="1">
-						<element name="header" type="rm:requestHeader" />
-					</choice>
-				</complexType>
-			</element>
-			<choice maxOccurs="1">
+		<sequence>
+			<element name="headers" type="rm:headers" minOccurs="0" maxOccurs="1" />
+			<choice minOccurs="0">
 				<element name="rawData" type="rm:rawData" />
 				<element name="formData" type="rm:formData" />
 			</choice>
-		</choice>
+		</sequence>
 		<attribute name="method" type="rm:httpMethod" use="optional" />
 		<attribute name="url" type="anyURI" use="optional" />
 		<attribute name="repeat" type="positiveInteger" use="optional" />
@@ -136,8 +143,7 @@
 		<complexType>
 			<sequence>
 				<element name="script" type="rm:script" minOccurs="0" maxOccurs="unbounded" />
-				<element name="options" type="rm:options" minOccurs="0" maxOccurs="1" />
-				<element name="baseRequest" type="rm:request" minOccurs="0" maxOccurs="1" />
+				<element name="clientSetup" type="rm:clientSetup" minOccurs="0" maxOccurs="1" />
 				<element name="request" type="rm:request" minOccurs="1" maxOccurs="unbounded" />
 			</sequence>
 		</complexType>
