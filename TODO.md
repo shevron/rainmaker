@@ -27,5 +27,4 @@ Concurrency
 Internal
 --------
 - Simplify rmRequestParamType - only need scalars, arrays, objects and file
-- Get rid of baseRequest - there should be a client setup section, and requests
 - Reuse SoupMessage on request repeats

@@ -48,7 +48,7 @@ static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GErr
     gboolean            replace;
     guint               i;
 
-    const xmlChar *xpathExpr = BAD_CAST "rm:headers/rm:header";
+    const xmlChar *xpathExpr = BAD_CAST "//rm:clientSetup/rm:headers/rm:header | rm:headers/rm:header";
 
     g_assert(node->type == XML_ELEMENT_NODE);
 
