@@ -122,9 +122,9 @@ guint rm_client_send_request(rmClient *client, rmRequest *request)
 
     // Add body
     if (request->body != NULL) {
-        g_assert(request->bodyType != NULL);
-        soup_message_set_request(msg, request->bodyType, SOUP_MEMORY_TEMPORARY,
-            request->body, request->bodyLength);
+        g_assert(request->bodyType);
+        soup_message_set_request(msg, g_quark_to_string(request->bodyType),
+                SOUP_MEMORY_TEMPORARY, request->body, request->bodyLength);
     }
 
     // Add headers

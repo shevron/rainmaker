@@ -97,6 +97,68 @@ static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GErr
 
 gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, GError **error)
 {
+    GSList         *params = NULL;
+    rmRequestParam *param;
+    xmlChar        *attr, *value;
+    xmlNode        *child;
+
+    g_assert(node->type == XML_ELEMENT_NODE && xmlStrcmp(node->name, BAD_CAST "formData") == 0);
+
+    // Figure out encoding type (default is form-urlencoded)
+    attr = xmlGetProp(node, BAD_CAST "enctype");
+    if (attr != NULL) {
+        request->bodyType = g_quark_from_string((const gchar *) attr);
+        xmlFree(attr);
+    } else {
+        request->bodyType = g_quark_from_static_string("application/x-www-form-urlencoded");
+    }
+
+    // Iterate over child elements and add them to the param list
+    for (child = node->children; child; child = child->next) {
+        if (child->type != XML_ELEMENT_NODE) continue;
+        XML_IF_NODE_NAME(child, "formParam") {
+            // Get param name
+            attr = xmlGetProp(child, BAD_CAST "name");
+            if (attr == NULL) {
+                g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                        "missing required XML attribute 'name' for 'formParam' element in line %u", child->line);
+                break;
+            }
+
+            // Get param value
+            value = xmlNodeListGetString(child->doc, child->children, 1);
+            if (value == NULL) {
+                g_printerr("Warning: form parameter value '%s' (defined in line %u) has no value\n",
+                        attr, child->line);
+                value = xmlStrdup(BAD_CAST "");
+            }
+
+            // TODO: for now all params are strings, we should support other (complex) types
+            param = rm_request_param_new(RM_REQUEST_PARAM_STRING);
+            param->name = (gchar *) attr;
+            param->strValue = (gchar *) value;
+
+            params = g_slist_append(params, (gpointer) param);
+
+        } else {
+            g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,
+                    "unexpected XML element '%s', expecting 'formParam' in line %u", child->name, child->line);
+            break;
+        }
+    }
+
+    if (*error != NULL) {
+        g_slist_free_full(params, (GDestroyNotify) rm_request_param_free);
+        return FALSE;
+    }
+
+    // Encode parameters as request body
+    request->body = rm_request_encode_params(params, request->bodyType, &request->bodyLength, error);
+    g_slist_free_full(params, (GDestroyNotify) rm_request_param_free);
+    if (request->body == NULL) {
+        return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -150,9 +212,9 @@ gboolean read_request_body_raw_data(xmlNode *node, rmRequest *request, GError **
     attr = xmlGetProp(node, BAD_CAST "contentType");
     if (attr != NULL) {
         // rmRequest will free the content type when freed, no need to copy XML string
-        request->bodyType = (gchar *) attr;
+        request->bodyType = g_quark_from_string((const gchar *) attr);
     } else {
-        request->bodyType = g_strdup("application/octet-stream");
+        request->bodyType = g_quark_from_static_string("application/octet-stream");
     }
 
     request->body = body;
