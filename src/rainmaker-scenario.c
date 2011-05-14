@@ -26,10 +26,11 @@ rmScenario* rm_scenario_new()
     rmScenario *scn;
 
     scn = g_malloc(sizeof(rmScenario));
-    scn->requests        = NULL;
-    scn->persistCookies  = FALSE;
-    scn->failOnHttpError = TRUE;
-    scn->failOnTcpError  = TRUE;
+    scn->requests           = NULL;
+    scn->persistCookies     = FALSE;
+    scn->failOnHttpError    = TRUE;
+    scn->failOnHttpRedirect = FALSE;
+    scn->failOnTcpError     = TRUE;
 
     return scn;
 }

@@ -412,6 +412,9 @@ static gboolean read_options_xml(xmlNode *node, rmScenario *scenario, GError **e
         } else if (xmlStrcmp(attr, BAD_CAST "failOnTcpError") == 0) {
             scenario->failOnTcpError = XML_ATTR_TO_BOOLEAN(value);
 
+        } else if (xmlStrcmp(attr, BAD_CAST "failOnHttpRedirect") == 0) {
+            scenario->failOnHttpRedirect = XML_ATTR_TO_BOOLEAN(value);
+
         } else {
             // Unknown option
             g_set_error(error, RM_ERROR_XML, RM_ERROR_XML_VALIDATE,

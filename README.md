@@ -46,6 +46,7 @@ Currently, rainmaker supports the following functions:
  - Optional per-client HTTP Cookie persistence 
  - Stop test execution in case of HTTP errors (4xx or 5xx codes)
  - Stop test execution in case of TCP or other connection errors
+ - Stop test execution in case of HTTP redirects (3xx) - off by default
  - Print out an execution summary specifying the total time it took to run the
    entire scenario on all clients, and the total number of requests / responses
    split by HTTP response code. 

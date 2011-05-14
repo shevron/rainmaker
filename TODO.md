@@ -14,7 +14,6 @@ Testing and Analysis
 --------------------
 - Improve logging (log only errors, remove Soup messages)
 - Scriptability - SpiderMonkey integration
-- Fail on HTTP redirect
 - "Expected Response" per request
   - Check status code
   - Check header value / existance

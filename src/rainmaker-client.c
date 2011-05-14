@@ -114,8 +114,9 @@ void rm_client_run_scenario(rmClient *client, rmScenario *scenario)
         for (i = 0; i < req->repeat; i++) {
             status = rm_client_send_request(client, req);
 
-            if ((status < 100 && scenario->failOnTcpError) ||
-                (status >= 400 && scenario->failOnHttpError)) {
+            if ((scenario->failOnTcpError && status < 100) ||
+                (scenario->failOnHttpRedirect && status >= 300 && status < 400) ||
+                (scenario->failOnHttpError && status >= 400)) {
 
                 client->scoreboard->failed = TRUE;
                 break;

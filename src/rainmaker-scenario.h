@@ -18,6 +18,7 @@ typedef struct _rmScenario {
     GSList     *requests;
     gboolean    persistCookies;
     gboolean    failOnHttpError;
+    gboolean    failOnHttpRedirect;
     gboolean    failOnTcpError;
 } rmScenario;
 
