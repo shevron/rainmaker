@@ -29,7 +29,7 @@
 #define RM_XML_XSD_FILE "rainmaker-scenario-1.0.xsd"
 #endif
 
-#define XML_ATTR_TO_BOOLEAN(v) (xmlStrncasecmp(v, BAD_CAST "yes", 4) == 0 || xmlStrncasecmp(v, BAD_CAST "true", 5) == 0)
+#define XML_ATTR_TO_BOOLEAN(v) (xmlStrcmp(v, BAD_CAST "yes") == 0 || xmlStrcmp(v, BAD_CAST "true") == 0)
 #define XML_IF_NODE_NAME(nd, nm) if (xmlStrcmp(nd->name, BAD_CAST nm) == 0)
 
 static gboolean read_request_headers_xml(xmlNode *node, rmRequest *request, GError **error)
