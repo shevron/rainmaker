@@ -133,7 +133,7 @@ gchar* rm_request_encode_params(const GSList *params, GQuark encoding, gsize *bo
 /// Create a new request struct with a defined method and URL. This can
 /// optionally use a pre-allocated base URL. The base URL will not be copied
 /// or freed, and it is the responsibility of the calling function to handle it
-rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error)
+rmRequest* rm_request_new(const gchar *method, gchar *url, const SoupURI *baseUrl, GError **error)
 {
     rmRequest *req;
 
@@ -150,7 +150,7 @@ rmRequest* rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GEr
     if (baseUrl == NULL) {
         req->url = soup_uri_new(url);
     } else {
-        req->url = soup_uri_new_with_base(baseUrl, url);
+        req->url = soup_uri_new_with_base((SoupURI *) baseUrl, url);
     }
 
     if (! SOUP_URI_VALID_FOR_HTTP(req->url)) {

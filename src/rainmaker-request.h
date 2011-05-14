@@ -69,7 +69,7 @@ void            rm_header_free(rmHeader *header);
 rmRequestParam* rm_request_param_new(rmRequestParamType type);
 void            rm_request_param_free(rmRequestParam *param);
 gchar*          rm_request_encode_params(const GSList *params, GQuark encoding, gsize *bodyLength, GError **error);
-rmRequest*      rm_request_new(const gchar *method, gchar *url, SoupURI *baseUrl, GError **error);
+rmRequest*      rm_request_new(const gchar *method, gchar *url, const SoupURI *baseUrl, GError **error);
 void            rm_request_add_header(rmRequest *request, const gchar *name, const gchar *value, gboolean reaplce);
 void            rm_request_free(rmRequest *req);
 
