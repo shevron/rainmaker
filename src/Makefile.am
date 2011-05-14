@@ -10,7 +10,7 @@
 
 bin_PROGRAMS = rmtest
 
-rmtest_SOURCES = rmtest-main.c \
+rmtest_SOURCES = main.c \
                  rainmaker-client.c \
                  rainmaker-request.c \
                  rainmaker-scenario.c \
