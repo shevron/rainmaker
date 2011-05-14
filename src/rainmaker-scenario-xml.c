@@ -147,7 +147,8 @@ gboolean read_request_body_raw_data(xmlNode *node, rmRequest *request, GError **
     }
 
     // Set the content type
-    if ((attr == xmlGetProp(node, BAD_CAST "contentType"))) {
+    attr = xmlGetProp(node, BAD_CAST "contentType");
+    if (attr != NULL) {
         // rmRequest will free the content type when freed, no need to copy XML string
         request->bodyType = (gchar *) attr;
     } else {
