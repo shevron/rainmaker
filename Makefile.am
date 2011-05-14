@@ -10,5 +10,4 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = src \
-          share
+SUBDIRS = src

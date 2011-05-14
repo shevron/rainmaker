@@ -32,10 +32,9 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h])
 
 # Define the location of the share dir
-AC_DEFINE_DIR([RM_DATA_DIR], [{datadir}/$PACKAGE_NAME], [location of shared data files])
+AC_DEFINE_DIR([RM_DATA_DIR], [{datadir}/$PACKAGE_NAME/], [location of shared data files])
 
 AC_CONFIG_FILES([Makefile
-                 src/Makefile
-                 share/Makefile])
+                 src/Makefile])
 
 AC_OUTPUT
