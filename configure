@@ -619,10 +619,10 @@ LIBOBJS
 RM_DATA_DIR
 libxml2_LIBS
 libxml2_CFLAGS
-LIBSOUP_LIBS
-LIBSOUP_CFLAGS
-LIBGLIB_LIBS
-LIBGLIB_CFLAGS
+libsoup_LIBS
+libsoup_CFLAGS
+glib_LIBS
+glib_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -757,10 +757,10 @@ CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-LIBGLIB_CFLAGS
-LIBGLIB_LIBS
-LIBSOUP_CFLAGS
-LIBSOUP_LIBS
+glib_CFLAGS
+glib_LIBS
+libsoup_CFLAGS
+libsoup_LIBS
 libxml2_CFLAGS
 libxml2_LIBS'
 
@@ -1414,14 +1414,12 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  LIBGLIB_CFLAGS
-              C compiler flags for LIBGLIB, overriding pkg-config
-  LIBGLIB_LIBS
-              linker flags for LIBGLIB, overriding pkg-config
-  LIBSOUP_CFLAGS
-              C compiler flags for LIBSOUP, overriding pkg-config
-  LIBSOUP_LIBS
-              linker flags for LIBSOUP, overriding pkg-config
+  glib_CFLAGS C compiler flags for glib, overriding pkg-config
+  glib_LIBS   linker flags for glib, overriding pkg-config
+  libsoup_CFLAGS
+              C compiler flags for libsoup, overriding pkg-config
+  libsoup_LIBS
+              linker flags for libsoup, overriding pkg-config
   libxml2_CFLAGS
               C compiler flags for libxml2, overriding pkg-config
   libxml2_LIBS
@@ -11355,11 +11353,11 @@ $as_echo "no" >&6; }
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBGLIB" >&5
-$as_echo_n "checking for LIBGLIB... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for glib" >&5
+$as_echo_n "checking for glib... " >&6; }
 
-if test -n "$LIBGLIB_CFLAGS"; then
-    pkg_cv_LIBGLIB_CFLAGS="$LIBGLIB_CFLAGS"
+if test -n "$glib_CFLAGS"; then
+    pkg_cv_glib_CFLAGS="$glib_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.8\""; } >&5
@@ -11367,15 +11365,15 @@ if test -n "$LIBGLIB_CFLAGS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGLIB_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.8" 2>/dev/null`
+  pkg_cv_glib_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.8" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$LIBGLIB_LIBS"; then
-    pkg_cv_LIBGLIB_LIBS="$LIBGLIB_LIBS"
+if test -n "$glib_LIBS"; then
+    pkg_cv_glib_LIBS="$glib_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.8\""; } >&5
@@ -11383,7 +11381,7 @@ if test -n "$LIBGLIB_LIBS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBGLIB_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.8" 2>/dev/null`
+  pkg_cv_glib_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.8" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11403,22 +11401,22 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBGLIB_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "glib-2.0 >= 2.8" 2>&1`
+	        glib_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "glib-2.0 >= 2.8" 2>&1`
         else
-	        LIBGLIB_PKG_ERRORS=`$PKG_CONFIG --print-errors "glib-2.0 >= 2.8" 2>&1`
+	        glib_PKG_ERRORS=`$PKG_CONFIG --print-errors "glib-2.0 >= 2.8" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$LIBGLIB_PKG_ERRORS" >&5
+	echo "$glib_PKG_ERRORS" >&5
 
 	as_fn_error $? "Package requirements (glib-2.0 >= 2.8) were not met:
 
-$LIBGLIB_PKG_ERRORS
+$glib_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables LIBGLIB_CFLAGS
-and LIBGLIB_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables glib_CFLAGS
+and glib_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -11429,50 +11427,50 @@ as_fn_error $? "The pkg-config script could not be found or is too old.  Make su
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables LIBGLIB_CFLAGS
-and LIBGLIB_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables glib_CFLAGS
+and glib_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details" "$LINENO" 5; }
 else
-	LIBGLIB_CFLAGS=$pkg_cv_LIBGLIB_CFLAGS
-	LIBGLIB_LIBS=$pkg_cv_LIBGLIB_LIBS
+	glib_CFLAGS=$pkg_cv_glib_CFLAGS
+	glib_LIBS=$pkg_cv_glib_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBSOUP" >&5
-$as_echo_n "checking for LIBSOUP... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for libsoup" >&5
+$as_echo_n "checking for libsoup... " >&6; }
 
-if test -n "$LIBSOUP_CFLAGS"; then
-    pkg_cv_LIBSOUP_CFLAGS="$LIBSOUP_CFLAGS"
+if test -n "$libsoup_CFLAGS"; then
+    pkg_cv_libsoup_CFLAGS="$libsoup_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4 >= 2.4" 2>/dev/null`
+  pkg_cv_libsoup_CFLAGS=`$PKG_CONFIG --cflags "libsoup-2.4 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
  else
     pkg_failed=untried
 fi
-if test -n "$LIBSOUP_LIBS"; then
-    pkg_cv_LIBSOUP_LIBS="$LIBSOUP_LIBS"
+if test -n "$libsoup_LIBS"; then
+    pkg_cv_libsoup_LIBS="$libsoup_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libsoup-2.4 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libsoup-2.4 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_LIBSOUP_LIBS=`$PKG_CONFIG --libs "libsoup-2.4 >= 2.4" 2>/dev/null`
+  pkg_cv_libsoup_LIBS=`$PKG_CONFIG --libs "libsoup-2.4 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11492,22 +11490,22 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4 >= 2.4" 2>&1`
+	        libsoup_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libsoup-2.4 >= 2.24" 2>&1`
         else
-	        LIBSOUP_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4 >= 2.4" 2>&1`
+	        libsoup_PKG_ERRORS=`$PKG_CONFIG --print-errors "libsoup-2.4 >= 2.24" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$LIBSOUP_PKG_ERRORS" >&5
+	echo "$libsoup_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libsoup-2.4 >= 2.4) were not met:
+	as_fn_error $? "Package requirements (libsoup-2.4 >= 2.24) were not met:
 
-$LIBSOUP_PKG_ERRORS
+$libsoup_PKG_ERRORS
 
 Consider adjusting the PKG_CONFIG_PATH environment variable if you
 installed software in a non-standard prefix.
 
-Alternatively, you may set the environment variables LIBSOUP_CFLAGS
-and LIBSOUP_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables libsoup_CFLAGS
+and libsoup_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details." "$LINENO" 5
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -11518,15 +11516,15 @@ as_fn_error $? "The pkg-config script could not be found or is too old.  Make su
 is in your PATH or set the PKG_CONFIG environment variable to the full
 path to pkg-config.
 
-Alternatively, you may set the environment variables LIBSOUP_CFLAGS
-and LIBSOUP_LIBS to avoid the need to call pkg-config.
+Alternatively, you may set the environment variables libsoup_CFLAGS
+and libsoup_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 
 To get pkg-config, see <http://pkg-config.freedesktop.org/>.
 See \`config.log' for more details" "$LINENO" 5; }
 else
-	LIBSOUP_CFLAGS=$pkg_cv_LIBSOUP_CFLAGS
-	LIBSOUP_LIBS=$pkg_cv_LIBSOUP_LIBS
+	libsoup_CFLAGS=$pkg_cv_libsoup_CFLAGS
+	libsoup_LIBS=$pkg_cv_libsoup_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 

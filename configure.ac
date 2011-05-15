@@ -23,8 +23,8 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 # Checks for libraries.
-PKG_CHECK_MODULES([LIBGLIB], [glib-2.0 >= 2.8])
-PKG_CHECK_MODULES([LIBSOUP], [libsoup-2.4 >= 2.4])
+PKG_CHECK_MODULES([glib],    [glib-2.0 >= 2.8])
+PKG_CHECK_MODULES([libsoup], [libsoup-2.4 >= 2.24])
 PKG_CHECK_MODULES([libxml2], [libxml-2.0 >= 2.7])
 
 # Checks for header files.

@@ -43,7 +43,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = rmtest$(EXEEXT)
+bin_PROGRAMS = rainmaker$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -59,12 +59,12 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(rmsharedir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_rmtest_OBJECTS = main.$(OBJEXT) rainmaker-client.$(OBJEXT) \
+am_rainmaker_OBJECTS = main.$(OBJEXT) rainmaker-client.$(OBJEXT) \
 	rainmaker-request.$(OBJEXT) rainmaker-scenario.$(OBJEXT) \
 	rainmaker-scenario-xml.$(OBJEXT) \
 	rainmaker-scoreboard.$(OBJEXT)
-rmtest_OBJECTS = $(am_rmtest_OBJECTS)
-rmtest_LDADD = $(LDADD)
+rainmaker_OBJECTS = $(am_rainmaker_OBJECTS)
+rainmaker_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -78,8 +78,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(rmtest_SOURCES)
-DIST_SOURCES = $(rmtest_SOURCES)
+SOURCES = $(rainmaker_SOURCES)
+DIST_SOURCES = $(rainmaker_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -137,12 +137,8 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBGLIB_CFLAGS = @LIBGLIB_CFLAGS@
-LIBGLIB_LIBS = @LIBGLIB_LIBS@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBSOUP_LIBS@
-LIBSOUP_CFLAGS = @LIBSOUP_CFLAGS@
-LIBSOUP_LIBS = @LIBSOUP_LIBS@
+LIBS = @libsoup_LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
@@ -198,6 +194,8 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+glib_CFLAGS = @glib_CFLAGS@
+glib_LIBS = @glib_LIBS@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -209,6 +207,8 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
+libsoup_CFLAGS = @libsoup_CFLAGS@
+libsoup_LIBS = @libsoup_LIBS@
 libxml2_CFLAGS = @libxml2_CFLAGS@
 libxml2_LIBS = @libxml2_LIBS@
 localedir = @localedir@
@@ -228,20 +228,20 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-rmtest_SOURCES = main.c \
-                 rainmaker-client.c \
-                 rainmaker-request.c \
-                 rainmaker-scenario.c \
-                 rainmaker-scenario-xml.c \
-                 rainmaker-scoreboard.c
+rainmaker_SOURCES = main.c \
+                    rainmaker-client.c \
+                    rainmaker-request.c \
+                    rainmaker-scenario.c \
+                    rainmaker-scenario-xml.c \
+                    rainmaker-scoreboard.c
 
 xsdFile = rainmaker-scenario-1.0.xsd
 rmsharedir = $(datadir)/$(PACKAGE)
 rmshare_DATA = $(xsdFile) 
-AM_CFLAGS = $(LIBSOUP_CFLAGS) \
+AM_CFLAGS = $(libsoup_CFLAGS) \
             -D RM_XML_XSD_FILE=\"$(xsdFile)\"
 
-AM_CPPFLAGS = $(LIBSOUP_CFLAGS)
+AM_CPPFLAGS = $(libsoup_CFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -319,9 +319,9 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-rmtest$(EXEEXT): $(rmtest_OBJECTS) $(rmtest_DEPENDENCIES) 
-	@rm -f rmtest$(EXEEXT)
-	$(LINK) $(rmtest_OBJECTS) $(rmtest_LDADD) $(LIBS)
+rainmaker$(EXEEXT): $(rainmaker_OBJECTS) $(rainmaker_DEPENDENCIES) 
+	@rm -f rainmaker$(EXEEXT)
+	$(LINK) $(rainmaker_OBJECTS) $(rainmaker_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

@@ -8,21 +8,21 @@
 
 # rainmaker Makefile.am
 
-bin_PROGRAMS = rmtest
+bin_PROGRAMS = rainmaker
 
-rmtest_SOURCES = main.c \
-                 rainmaker-client.c \
-                 rainmaker-request.c \
-                 rainmaker-scenario.c \
-                 rainmaker-scenario-xml.c \
-                 rainmaker-scoreboard.c
+rainmaker_SOURCES = main.c \
+                    rainmaker-client.c \
+                    rainmaker-request.c \
+                    rainmaker-scenario.c \
+                    rainmaker-scenario-xml.c \
+                    rainmaker-scoreboard.c
 
 xsdFile = rainmaker-scenario-1.0.xsd
 rmsharedir = $(datadir)/$(PACKAGE)
 rmshare_DATA = $(xsdFile) 
 
-LIBS = @LIBSOUP_LIBS@
-AM_CFLAGS = $(LIBSOUP_CFLAGS) \
+LIBS = @libsoup_LIBS@
+AM_CFLAGS = $(libsoup_CFLAGS) \
             -D RM_XML_XSD_FILE=\"$(xsdFile)\"
             
-AM_CPPFLAGS = $(LIBSOUP_CFLAGS)
+AM_CPPFLAGS = $(libsoup_CFLAGS)
