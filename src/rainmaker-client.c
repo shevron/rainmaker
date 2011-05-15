@@ -89,7 +89,7 @@ static guint rm_client_send_request(rmClient *client, rmRequest *request)
     if (s >= 0 && s <= 5) {
         client->scoreboard->resp_codes[s]++;
     } else {
-        g_printerr("WARNING: strange HTTP response code '%u' encountered\n", status);
+        g_printerr("WARNING: unexpected HTTP response code '%u' encountered\n", status);
     }
     client->scoreboard->elapsed += g_timer_elapsed(client->scoreboard->stopwatch, NULL);
 

@@ -175,6 +175,7 @@ static gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, G
     if (request->body == NULL) {
         return FALSE;
     }
+    request->freeBody = TRUE;
 
     return TRUE;
 }
