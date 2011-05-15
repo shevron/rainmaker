@@ -27,6 +27,11 @@ PKG_CHECK_MODULES([glib],    [glib-2.0 >= 2.24])
 PKG_CHECK_MODULES([libsoup], [libsoup-2.4 >= 2.24])
 PKG_CHECK_MODULES([libxml2], [libxml-2.0 >= 2.6])
 
+# Checks for library functions.
+AC_CHECK_LIB([glib-2.0], [g_slist_free_full], [
+  AC_DEFINE(HAVE_GLIB_SLIST_FREE_FULL, 1, [define if glib has g_slist_free_full])
+], [ ], [$glib_LIBS])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h])

@@ -11,6 +11,10 @@
 
 #include "rainmaker-request.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 static gchar *rmRequestParamTypeNames[] = {
     "integer", "float",  "boolean", "null", "string",
     "array",   "object", "file"
@@ -21,7 +25,7 @@ static gchar *rmRequestParamTypeNames[] = {
 /// before version 2.28
 void rm_gslist_free_full(GSList *list, GDestroyNotify free_func)
 {
-#if GLIB_MINOR_VERSION < 28
+#ifndef HAVE_GLIB_SLIST_FREE_FULL
     GSList *node;
 
     for (node = list; node; node = node->next) {
