@@ -27,6 +27,6 @@ void          rm_scenario_add_request(rmScenario *scenario, rmRequest *request);
 void          rm_scenario_free(rmScenario *scenario);
 
 #define RAINMAKER_SCENARIO_H_
-#endif;
+#endif
 
 // vim:ts=4:expandtab:cindent:sw=2
