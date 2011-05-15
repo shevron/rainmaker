@@ -16,6 +16,23 @@ static gchar *rmRequestParamTypeNames[] = {
     "array",   "object", "file"
 };
 
+/// Free a GSList entirely, including the data pointed to by list nodes.
+/// This is a wrapper around g_slist_free_full which is not available in glib
+/// before version 2.28
+void rm_gslist_free_full(GSList *list, GDestroyNotify free_func)
+{
+#if GLIB_MINOR_VERSION < 28
+    GSList *node;
+
+    for (node = list; node; node = node->next) {
+        free_func(node->data);
+    }
+    g_slist_free(list);
+#else
+    g_slist_free_full(list, free_func);
+#endif
+}
+
 rmHeader* rm_header_new(const gchar *name, const gchar *value)
 {
     rmHeader *header;
@@ -176,7 +193,7 @@ void rm_header_copy_to_request(rmHeader *header, rmRequest *dest)
 void rm_request_free(rmRequest *req)
 {
     if (req->url != NULL) soup_uri_free(req->url);
-    g_slist_free_full(req->headers, (GDestroyNotify) rm_header_free);
+    rm_gslist_free_full(req->headers, (GDestroyNotify) rm_header_free);
 
     if (req->freeBody && req->body != NULL)
         g_free(req->body);

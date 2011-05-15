@@ -9,7 +9,7 @@
 #include <glib.h>
 #include <libsoup/soup.h>
 
-#ifndef HAVE_RAINMAKER_REQUEST_H
+#ifndef RAINMAKER_REQUEST_H_
 
 typedef struct _rmHeader {
     gchar    *name;
@@ -73,7 +73,10 @@ rmRequest*      rm_request_new(const gchar *method, gchar *url, const SoupURI *b
 void            rm_request_add_header(rmRequest *request, const gchar *name, const gchar *value, gboolean reaplce);
 void            rm_request_free(rmRequest *req);
 
-#define HAVE_RAINMAKER_REQUEST_H
+// This can go away if we decide to bump the glib version requirement to 2.28
+void            rm_gslist_free_full(GSList *list, GDestroyNotify free_func);
+
+#define RAINMAKER_REQUEST_H_
 #endif
 
 // vim:ts=4:expandtab:cindent:sw=2

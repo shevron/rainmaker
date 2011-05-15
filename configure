@@ -11360,12 +11360,12 @@ if test -n "$glib_CFLAGS"; then
     pkg_cv_glib_CFLAGS="$glib_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.8\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glib-2.0 >= 2.8") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glib-2.0 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_glib_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.8" 2>/dev/null`
+  pkg_cv_glib_CFLAGS=`$PKG_CONFIG --cflags "glib-2.0 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11376,12 +11376,12 @@ if test -n "$glib_LIBS"; then
     pkg_cv_glib_LIBS="$glib_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.8\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "glib-2.0 >= 2.8") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"glib-2.0 >= 2.24\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "glib-2.0 >= 2.24") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_glib_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.8" 2>/dev/null`
+  pkg_cv_glib_LIBS=`$PKG_CONFIG --libs "glib-2.0 >= 2.24" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11401,14 +11401,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        glib_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "glib-2.0 >= 2.8" 2>&1`
+	        glib_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "glib-2.0 >= 2.24" 2>&1`
         else
-	        glib_PKG_ERRORS=`$PKG_CONFIG --print-errors "glib-2.0 >= 2.8" 2>&1`
+	        glib_PKG_ERRORS=`$PKG_CONFIG --print-errors "glib-2.0 >= 2.24" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$glib_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (glib-2.0 >= 2.8) were not met:
+	as_fn_error $? "Package requirements (glib-2.0 >= 2.24) were not met:
 
 $glib_PKG_ERRORS
 
@@ -11538,12 +11538,12 @@ if test -n "$libxml2_CFLAGS"; then
     pkg_cv_libxml2_CFLAGS="$libxml2_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libxml-2.0 >= 2.7\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libxml-2.0 >= 2.7") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libxml-2.0 >= 2.6\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libxml-2.0 >= 2.6") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_libxml2_CFLAGS=`$PKG_CONFIG --cflags "libxml-2.0 >= 2.7" 2>/dev/null`
+  pkg_cv_libxml2_CFLAGS=`$PKG_CONFIG --cflags "libxml-2.0 >= 2.6" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11554,12 +11554,12 @@ if test -n "$libxml2_LIBS"; then
     pkg_cv_libxml2_LIBS="$libxml2_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libxml-2.0 >= 2.7\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libxml-2.0 >= 2.7") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libxml-2.0 >= 2.6\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libxml-2.0 >= 2.6") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_libxml2_LIBS=`$PKG_CONFIG --libs "libxml-2.0 >= 2.7" 2>/dev/null`
+  pkg_cv_libxml2_LIBS=`$PKG_CONFIG --libs "libxml-2.0 >= 2.6" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11579,14 +11579,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        libxml2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libxml-2.0 >= 2.7" 2>&1`
+	        libxml2_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors "libxml-2.0 >= 2.6" 2>&1`
         else
-	        libxml2_PKG_ERRORS=`$PKG_CONFIG --print-errors "libxml-2.0 >= 2.7" 2>&1`
+	        libxml2_PKG_ERRORS=`$PKG_CONFIG --print-errors "libxml-2.0 >= 2.6" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$libxml2_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libxml-2.0 >= 2.7) were not met:
+	as_fn_error $? "Package requirements (libxml-2.0 >= 2.6) were not met:
 
 $libxml2_PKG_ERRORS
 

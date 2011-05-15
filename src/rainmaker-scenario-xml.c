@@ -7,6 +7,7 @@
 /// ---------------------------------------------------------------------------
 
 #include <string.h>
+#include <errno.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -164,13 +165,13 @@ static gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, G
     }
 
     if (*error != NULL) {
-        g_slist_free_full(params, (GDestroyNotify) rm_request_param_free);
+        rm_gslist_free_full(params, (GDestroyNotify) rm_request_param_free);
         return FALSE;
     }
 
     // Encode parameters as request body
     request->body = rm_request_encode_params(params, request->bodyType, &request->bodyLength, error);
-    g_slist_free_full(params, (GDestroyNotify) rm_request_param_free);
+    rm_gslist_free_full(params, (GDestroyNotify) rm_request_param_free);
     if (request->body == NULL) {
         return FALSE;
     }
