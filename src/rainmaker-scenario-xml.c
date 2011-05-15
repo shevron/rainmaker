@@ -144,7 +144,7 @@ static gboolean read_request_body_form_data(xmlNode *node, rmRequest *request, G
             // Get param value
             value = xmlNodeListGetString(child->doc, child->children, 1);
             if (value == NULL) {
-                g_printerr("Warning: form parameter value '%s' (defined in line %u) has no value\n",
+                g_printerr("Warning: form parameter '%s' (defined in line %u) has no value\n",
                         attr, child->line);
                 value = xmlStrdup(BAD_CAST "");
             }
